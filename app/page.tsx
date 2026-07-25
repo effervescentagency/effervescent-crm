@@ -1,0 +1,1056 @@
+'use client';
+import { useState } from 'react';
+type Status = 'Prospect' | 'Lead' | 'Client' | 'Inactive';
+type RoleType =
+  | 'Manager'
+  | 'Partner'
+  | 'Business Owner'
+  | 'Staff Member'
+  | 'Other';
+interface Interaction {
+  id: number;
+  date: string;
+  method: string;
+  contactedBy: string;
+  notes: string;
+}
+interface Contact {
+  id: number;
+  name: string;
+  company: string;
+  city: string;
+  role: RoleType;
+  email: string;
+  phone: string;
+  status: Status;
+  lastContact: string;
+  created: string;
+  notes: string;
+  interactions: Interaction[];
+}
+const statusColors: Record<Status, string> = {
+  Prospect: 'bg-purple-100 text-purple-700',
+  Lead: 'bg-yellow-100 text-yellow-700',
+  Client: 'bg-green-100 text-green-700',
+  Inactive: 'bg-gray-100 text-gray-600',
+};
+const roleOptions: RoleType[] = [
+  'Manager',
+  'Partner',
+  'Business Owner',
+  'Staff Member',
+  'Other',
+];
+const statusOptions: Status[] = ['Prospect', 'Lead', 'Client', 'Inactive'];
+const methodOptions = ['Email', 'Phone Call', 'WhatsApp', 'In-Person', 'Other'];
+const seedContacts: Contact[] = [
+  {
+    id: 1,
+    name: 'Marcus Aurelius',
+    company: 'Rome Ventures Ltd',
+    city: 'London',
+    role: 'Manager',
+    email: 'marcus@romeventures.net',
+    phone: '+44 7700 900255',
+    status: 'Prospect',
+    lastContact: '21 Jul 2026',
+    created: '20 Jul 2026',
+    notes: 'Interested in executive search services for Q3 hiring.',
+    interactions: [
+      {
+        id: 1,
+        date: '21 Jul 2026',
+        method: 'Email',
+        contactedBy: 'Sarah (Sales)',
+        notes: 'Responded to their inquiry about candidate placement fees.',
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: 'Elena Rostova',
+    company: 'Apex Tech Labs',
+    city: 'Manchester',
+    role: 'Business Owner',
+    email: 'elena@apextech.io',
+    phone: '+44 7700 900143',
+    status: 'Lead',
+    lastContact: '13 Jul 2026',
+    created: '10 Jul 2026',
+    notes: 'Growing startup, may need 3-5 engineering hires this year.',
+    interactions: [
+      {
+        id: 1,
+        date: '13 Jul 2026',
+        method: 'Other',
+        contactedBy: 'Tom (BD)',
+        notes: 'Sent LinkedIn connection request and intro message.',
+      },
+    ],
+  },
+  {
+    id: 3,
+    name: 'Alexander Wright',
+    company: 'Wright Corporate Services',
+    city: 'Birmingham',
+    role: 'Partner',
+    email: 'alexander@wrightcorp.com',
+    phone: '+44 7700 900077',
+    status: 'Client',
+    lastContact: '30 Jun 2026',
+    created: '25 Jun 2026',
+    notes:
+      'Key strategic partner. Interested in hiring 15+ candidate roles for summer campaign.',
+    interactions: [
+      {
+        id: 1,
+        date: '30 Jun 2026',
+        method: 'Email',
+        contactedBy: 'Sarah (Sales)',
+        notes:
+          'Introductory email sent outlining our onboarding timelines and pricing structure.',
+      },
+    ],
+  },
+];
+function EyeIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+function PencilIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </svg>
+  );
+}
+function TrashIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+    </svg>
+  );
+}
+function MailIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="M22 6l-10 7L2 6" />
+    </svg>
+  );
+}
+function PhoneIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0122 16.92z" />
+    </svg>
+  );
+}
+function BuildingIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="4" y="2" width="16" height="20" rx="1" />
+      <path d="M9 22v-4h6v4" />
+    </svg>
+  );
+}
+function CalendarIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </svg>
+  );
+}
+function XIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  );
+}
+function PlusIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+function SearchIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="M21 21l-4.35-4.35" />
+    </svg>
+  );
+}
+export default function Home() {
+  const [contacts, setContacts] = useState<Contact[]>(seedContacts);
+  const [filter, setFilter] = useState<'All' | Status>('All');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [search, setSearch] = useState('');
+  const [modalMode, setModalMode] = useState<'add' | 'edit' | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [viewingId, setViewingId] = useState<number | null>(null);
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    city: '',
+    role: 'Manager' as RoleType,
+    status: 'Prospect' as Status,
+    notes: '',
+  });
+  const [notesDraft, setNotesDraft] = useState('');
+  const [newInteraction, setNewInteraction] = useState({
+    date: new Date().toISOString().slice(0, 10),
+    method: 'Email',
+    contactedBy: '',
+    notes: '',
+  });
+  function counts(s: 'All' | Status) {
+    return s === 'All'
+      ? contacts.length
+      : contacts.filter((c) => c.status === s).length;
+  }
+  function toggleSort(key: string) {
+    if (sortKey === key) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  }
+  function compareValues(key: string, a: Contact, b: Contact) {
+    if (key === 'created')
+      return new Date(a.created).getTime() - new Date(b.created).getTime();
+    if (key === 'role') return a.company.localeCompare(b.company);
+    const av = String((a as any)[key]);
+    const bv = String((b as any)[key]);
+    return av.localeCompare(bv);
+  }
+  const filtered = contacts.filter((c) => {
+    const matchesStatus = filter === 'All' || c.status === filter;
+    const matchesRole = roleFilter === 'all' || c.role === roleFilter;
+    const q = search.toLowerCase();
+    const matchesSearch =
+      !q ||
+      c.name.toLowerCase().includes(q) ||
+      c.company.toLowerCase().includes(q) ||
+      c.email.toLowerCase().includes(q) ||
+      c.phone.toLowerCase().includes(q);
+    return matchesStatus && matchesRole && matchesSearch;
+  });
+  const sorted = sortKey
+    ? [...filtered].sort((a, b) =>
+        sortDir === 'asc'
+          ? compareValues(sortKey, a, b)
+          : compareValues(sortKey, b, a)
+      )
+    : filtered;
+  const viewing = contacts.find((c) => c.id === viewingId) || null;
+  function openAdd() {
+    setForm({
+      name: '',
+      email: '',
+      phone: '',
+      company: '',
+      city: '',
+      role: 'Manager',
+      status: 'Prospect',
+      notes: '',
+    });
+    setModalMode('add');
+  }
+  function openEdit(c: Contact) {
+    setForm({
+      name: c.name,
+      email: c.email,
+      phone: c.phone,
+      company: c.company,
+      city: c.city,
+      role: c.role,
+      status: c.status,
+      notes: c.notes,
+    });
+    setEditingId(c.id);
+    setModalMode('edit');
+  }
+  function closeModal() {
+    setModalMode(null);
+    setEditingId(null);
+  }
+  function submitForm() {
+    if (!form.name || !form.email) return;
+    if (modalMode === 'add') {
+      const newContact: Contact = {
+        id: Date.now(),
+        name: form.name,
+        company: form.company,
+        city: form.city,
+        role: form.role,
+        email: form.email,
+        phone: form.phone,
+        status: form.status,
+        lastContact: '-',
+        created: new Date().toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }),
+        notes: form.notes,
+        interactions: [],
+      };
+      setContacts([newContact, ...contacts]);
+    } else if (modalMode === 'edit' && editingId !== null) {
+      setContacts(
+        contacts.map((c) =>
+          c.id === editingId
+            ? {
+                ...c,
+                name: form.name,
+                email: form.email,
+                phone: form.phone,
+                company: form.company,
+                city: form.city,
+                role: form.role,
+                status: form.status,
+                notes: form.notes,
+              }
+            : c
+        )
+      );
+    }
+    closeModal();
+  }
+  function deleteContact(id: number) {
+    setContacts(contacts.filter((c) => c.id !== id));
+    if (viewingId === id) setViewingId(null);
+  }
+  function openView(c: Contact) {
+    setViewingId(c.id);
+    setNotesDraft(c.notes);
+    setNewInteraction({
+      date: new Date().toISOString().slice(0, 10),
+      method: 'Email',
+      contactedBy: '',
+      notes: '',
+    });
+  }
+  function saveNotes() {
+    if (viewingId === null) return;
+    setContacts(
+      contacts.map((c) =>
+        c.id === viewingId ? { ...c, notes: notesDraft } : c
+      )
+    );
+  }
+  function logInteraction() {
+    if (viewingId === null || !newInteraction.notes) return;
+    setContacts(
+      contacts.map((c) => {
+        if (c.id !== viewingId) return c;
+        const interaction: Interaction = {
+          id: Date.now(),
+          date: newInteraction.date,
+          method: newInteraction.method,
+          contactedBy: newInteraction.contactedBy,
+          notes: newInteraction.notes,
+        };
+        return {
+          ...c,
+          interactions: [interaction, ...c.interactions],
+          lastContact: newInteraction.date,
+        };
+      })
+    );
+    setNewInteraction({
+      date: new Date().toISOString().slice(0, 10),
+      method: 'Email',
+      contactedBy: '',
+      notes: '',
+    });
+  }
+  function sortArrow(key: string) {
+    if (sortKey !== key) return '\u25BE';
+    return sortDir === 'asc' ? '\u25B4' : '\u25BE';
+  }
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+          <div className="w-10 h-10 rounded-xl bg-pink-200 border border-pink-300 shadow-sm" />
+          <div>
+            <div className="text-sm font-bold text-pink-400">Your Agency</div>
+            <div className="text-xs text-gray-900">
+              Clients and Partners CRM
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <SearchIcon />
+            </div>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search CRM by name, company, email, phone..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+            />
+          </div>
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-2 bg-pink-300 hover:bg-pink-400 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-sm"
+          >
+            <PlusIcon /> Add CRM Contact
+          </button>
+        </div>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setFilter('All')}
+              className={
+                'px-4 py-2 rounded-full text-sm font-medium border ' +
+                (filter === 'All'
+                  ? 'bg-pink-300 text-white border-pink-300'
+                  : 'bg-white text-gray-700 border-gray-200')
+              }
+            >
+              All Contacts <span className="ml-1">{counts('All')}</span>
+            </button>
+            <button
+              onClick={() => setFilter('Prospect')}
+              className={
+                'px-4 py-2 rounded-full text-sm font-medium border ' +
+                (filter === 'Prospect'
+                  ? 'bg-pink-300 text-white border-pink-300'
+                  : 'bg-white text-gray-700 border-gray-200')
+              }
+            >
+              Prospects <span className="ml-1">{counts('Prospect')}</span>
+            </button>
+            <button
+              onClick={() => setFilter('Lead')}
+              className={
+                'px-4 py-2 rounded-full text-sm font-medium border ' +
+                (filter === 'Lead'
+                  ? 'bg-pink-300 text-white border-pink-300'
+                  : 'bg-white text-gray-700 border-gray-200')
+              }
+            >
+              Leads <span className="ml-1">{counts('Lead')}</span>
+            </button>
+            <button
+              onClick={() => setFilter('Client')}
+              className={
+                'px-4 py-2 rounded-full text-sm font-medium border ' +
+                (filter === 'Client'
+                  ? 'bg-pink-300 text-white border-pink-300'
+                  : 'bg-white text-gray-700 border-gray-200')
+              }
+            >
+              Clients <span className="ml-1">{counts('Client')}</span>
+            </button>
+            <button
+              onClick={() => setFilter('Inactive')}
+              className={
+                'px-4 py-2 rounded-full text-sm font-medium border ' +
+                (filter === 'Inactive'
+                  ? 'bg-pink-300 text-white border-pink-300'
+                  : 'bg-white text-gray-700 border-gray-200')
+              }
+            >
+              Inactive <span className="ml-1">{counts('Inactive')}</span>
+            </button>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span className="font-medium">ROLE:</span>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm"
+            >
+              <option value="all">All Roles</option>
+              {roleOptions.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="border border-gray-100 rounded-xl overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th
+                  onClick={() => toggleSort('name')}
+                  className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
+                >
+                  NAME {sortArrow('name')}
+                </th>
+                <th
+                  onClick={() => toggleSort('role')}
+                  className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
+                >
+                  ROLE &amp; COMPANY {sortArrow('role')}
+                </th>
+                <th
+                  onClick={() => toggleSort('city')}
+                  className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
+                >
+                  CITY {sortArrow('city')}
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase">
+                  CONTACT INFO
+                </th>
+                <th
+                  onClick={() => toggleSort('status')}
+                  className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
+                >
+                  STATUS {sortArrow('status')}
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase">
+                  LAST CONTACT
+                </th>
+                <th
+                  onClick={() => toggleSort('created')}
+                  className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
+                >
+                  CREATED {sortArrow('created')}
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase">
+                  ACTIONS
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((c) => (
+                <tr
+                  key={c.id}
+                  className="border-b border-gray-50 hover:bg-gray-50"
+                >
+                  <td
+                    className="px-4 py-3 font-semibold text-gray-900 cursor-pointer hover:underline"
+                    onClick={() => openView(c)}
+                  >
+                    {c.name}
+                  </td>
+                  <td
+                    className="px-4 py-3 cursor-pointer"
+                    onClick={() => openView(c)}
+                  >
+                    <div className="text-gray-900">{c.company}</div>
+                    <div className="text-xs text-gray-500">{c.role}</div>
+                  </td>
+                  <td className="px-4 py-3 text-gray-700 text-xs">{c.city}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1 text-gray-600 text-xs">
+                      <MailIcon /> {c.email}
+                    </div>
+                    <div className="flex items-center gap-1 text-gray-600 text-xs mt-1">
+                      <PhoneIcon /> {c.phone}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={
+                        'px-3 py-1 rounded-full text-xs font-semibold ' +
+                        statusColors[c.status]
+                      }
+                    >
+                      {c.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-700 text-xs">
+                    {c.lastContact}
+                  </td>
+                  <td className="px-4 py-3 text-gray-700 text-xs">
+                    {c.created}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openView(c)}
+                        className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
+                      >
+                        <EyeIcon />
+                      </button>
+                      <button
+                        onClick={() => openEdit(c)}
+                        className="p-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50"
+                      >
+                        <PencilIcon />
+                      </button>
+                      <button
+                        onClick={() => deleteContact(c.id)}
+                        className="p-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="text-center text-xs text-gray-400">
+          Showing {sorted.length} of {contacts.length} CRM contacts
+        </div>
+      </div>
+      {modalMode && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden shadow-xl">
+            <div className="bg-pink-300 px-6 py-4 flex items-center justify-between">
+              <div className="text-white font-bold">
+                {modalMode === 'add'
+                  ? 'Add New CRM Contact'
+                  : 'Edit CRM Contact'}
+              </div>
+              <button onClick={closeModal} className="text-white">
+                <XIcon />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <div className="text-xs font-bold text-gray-500 mb-1">
+                  FULL NAME *
+                </div>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="e.g. John Doe"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs font-bold text-gray-500 mb-1">
+                    EMAIL *
+                  </div>
+                  <input
+                    value={form.email}
+                    onChange={(e) =>
+                      setForm({ ...form, email: e.target.value })
+                    }
+                    placeholder="john@company.com"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-gray-500 mb-1">
+                    PHONE NUMBER *
+                  </div>
+                  <input
+                    value={form.phone}
+                    onChange={(e) =>
+                      setForm({ ...form, phone: e.target.value })
+                    }
+                    placeholder="+44 7700 900000"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-500 mb-1">
+                  COMPANY NAME
+                </div>
+                <input
+                  value={form.company}
+                  onChange={(e) =>
+                    setForm({ ...form, company: e.target.value })
+                  }
+                  placeholder="e.g. Acme Corp"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-500 mb-1">
+                  CITY
+                </div>
+                <input
+                  value={form.city}
+                  onChange={(e) =>
+                    setForm({ ...form, city: e.target.value })
+                  }
+                  placeholder="e.g. London"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs font-bold text-gray-500 mb-1">
+                    ROLE / FUNCTION
+                  </div>
+                  <select
+                    value={form.role}
+                    onChange={(e) =>
+                      setForm({ ...form, role: e.target.value as RoleType })
+                    }
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                  >
+                    {roleOptions.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-gray-500 mb-1">
+                    CRM STATUS
+                  </div>
+                  <select
+                    value={form.status}
+                    onChange={(e) =>
+                      setForm({ ...form, status: e.target.value as Status })
+                    }
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                  >
+                    {statusOptions.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-500 mb-1">
+                  GENERAL NOTES
+                </div>
+                <textarea
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  placeholder="Additional context about this account..."
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm h-20"
+                />
+              </div>
+            </div>
+            <div className="px-6 pb-6 flex items-center gap-3">
+              <button
+                onClick={closeModal}
+                className="flex-1 border border-gray-200 rounded-xl py-2 text-sm font-semibold text-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitForm}
+                className="flex-1 bg-pink-300 hover:bg-pink-400 rounded-xl py-2 text-sm font-bold text-white"
+              >
+                {modalMode === 'add' ? 'Add Contact' : 'Update Contact'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {viewing && (
+        <div className="fixed inset-0 bg-black/40 flex justify-end z-50">
+          <div className="bg-white w-full max-w-md h-full overflow-y-auto shadow-xl">
+            <div className="bg-pink-300 px-6 py-5 flex items-start justify-between">
+              <div>
+                <div className="text-white font-bold text-lg">
+                  {viewing.name}
+                </div>
+                <div className="text-white/80 text-sm">
+                  {viewing.company} &bull; {viewing.role}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    'px-3 py-1 rounded-full text-xs font-semibold bg-white ' +
+                    (viewing.status === 'Prospect'
+                      ? 'text-purple-700'
+                      : viewing.status === 'Lead'
+                      ? 'text-yellow-700'
+                      : viewing.status === 'Client'
+                      ? 'text-green-700'
+                      : 'text-gray-600')
+                  }
+                >
+                  {viewing.status}
+                </span>
+                <button
+                  onClick={() => setViewingId(null)}
+                  className="text-white"
+                >
+                  <XIcon />
+                </button>
+              </div>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="bg-gray-50 rounded-xl p-4 grid grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center gap-1 text-xs font-bold text-gray-500">
+                    <MailIcon /> EMAIL ADDRESS
+                  </div>
+                  <div className="text-sm text-gray-900 mt-1">
+                    {viewing.email}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1 text-xs font-bold text-gray-500">
+                    <PhoneIcon /> PHONE NUMBER
+                  </div>
+                  <div className="text-sm text-gray-900 mt-1">
+                    {viewing.phone}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1 text-xs font-bold text-gray-500">
+                    <BuildingIcon /> COMPANY
+                  </div>
+                  <div className="text-sm text-gray-900 mt-1">
+                    {viewing.company}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1 text-xs font-bold text-gray-500">
+                    <CalendarIcon /> ADDED DATE
+                  </div>
+                  <div className="text-sm text-gray-900 mt-1">
+                    {viewing.created}
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => openEdit(viewing)}
+                  className="flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
+                >
+                  <PencilIcon /> Edit Profile
+                </button>
+              </div>
+              <div>
+                <div className="text-xs font-bold text-pink-400 mb-2">
+                  GENERAL ACCOUNT NOTES
+                </div>
+                <textarea
+                  value={notesDraft}
+                  onChange={(e) => setNotesDraft(e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm h-20"
+                />
+              </div>
+              <button
+                onClick={saveNotes}
+                className="w-full bg-gray-900 text-white rounded-xl py-2.5 text-sm font-bold"
+              >
+                Save Account Notes
+              </button>
+              <div>
+                <div className="text-xs font-bold text-pink-400 mb-3">
+                  CONVERSATION HISTORY
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                  <div className="text-sm font-semibold text-gray-900">
+                    Log New Communication
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 mb-1">
+                        DATE
+                      </div>
+                      <input
+                        type="date"
+                        value={newInteraction.date}
+                        onChange={(e) =>
+                          setNewInteraction({
+                            ...newInteraction,
+                            date: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 mb-1">
+                        METHOD
+                      </div>
+                      <select
+                        value={newInteraction.method}
+                        onChange={(e) =>
+                          setNewInteraction({
+                            ...newInteraction,
+                            method: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
+                      >
+                        {methodOptions.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 mb-1">
+                        CONTACTED BY
+                      </div>
+                      <input
+                        value={newInteraction.contactedBy}
+                        onChange={(e) =>
+                          setNewInteraction({
+                            ...newInteraction,
+                            contactedBy: e.target.value,
+                          })
+                        }
+                        placeholder="Staff"
+                        className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-gray-500 mb-1">
+                      INTERACTION NOTES *
+                    </div>
+                    <textarea
+                      value={newInteraction.notes}
+                      onChange={(e) =>
+                        setNewInteraction({
+                          ...newInteraction,
+                          notes: e.target.value,
+                        })
+                      }
+                      placeholder="Detail what was discussed, next action steps..."
+                      className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs h-16"
+                    />
+                  </div>
+                  <button
+                    onClick={logInteraction}
+                    className="w-full bg-pink-300 hover:bg-pink-400 text-white rounded-xl py-2 text-sm font-bold"
+                  >
+                    Log Interaction
+                  </button>
+                </div>
+                <div className="space-y-3 mt-4">
+                  {viewing.interactions.map((i) => (
+                    <div key={i.id} className="border-t border-gray-100 pt-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                          <MailIcon /> {i.method} Interaction
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-gray-400">
+                          <CalendarIcon /> {i.date}
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        {i.notes}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        LOGGED BY: {i.contactedBy}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
