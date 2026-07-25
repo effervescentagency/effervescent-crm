@@ -292,6 +292,8 @@ export default function Home() {
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
+  const [dragContactId, setDragContactId] = useState<number | null>(null);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -322,6 +324,9 @@ export default function Home() {
       setSortDir('asc');
     }
   }
+  function updateStatus(id: number, status: Status) {
+    setContacts(contacts.map((c) => (c.id === id ? { ...c, status } : c)));
+  }
   function compareValues(key: string, a: Contact, b: Contact) {
     if (key === 'created')
       return new Date(a.created).getTime() - new Date(b.created).getTime();
@@ -349,6 +354,17 @@ export default function Home() {
           : compareValues(sortKey, b, a)
       )
     : filtered;
+  const boardBase = contacts.filter((c) => {
+    const matchesRole = roleFilter === 'all' || c.role === roleFilter;
+    const q = search.toLowerCase();
+    const matchesSearch =
+      !q ||
+      c.name.toLowerCase().includes(q) ||
+      c.company.toLowerCase().includes(q) ||
+      c.email.toLowerCase().includes(q) ||
+      c.phone.toLowerCase().includes(q);
+    return matchesRole && matchesSearch;
+  });
   const viewing = contacts.find((c) => c.id === viewingId) || null;
   function openAdd() {
     setForm({
@@ -506,7 +522,28 @@ export default function Home() {
           >
             <PlusIcon /> Add CRM Contact
           </button>
+        
+        <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
+          <button
+            onClick={() => setViewMode('list')}
+            className={
+              'px-3 py-2 rounded-lg text-sm font-medium ' +
+              (viewMode === 'list' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500')
+            }
+          >
+            List
+          </button>
+          <button
+            onClick={() => setViewMode('board')}
+            className={
+              'px-3 py-2 rounded-lg text-sm font-medium ' +
+              (viewMode === 'board' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500')
+            }
+          >
+            Board
+          </button>
         </div>
+      </div>
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 flex-wrap">
             <button
@@ -592,6 +629,8 @@ export default function Home() {
             </select>
           </div>
         </div>
+        {viewMode === 'list' && (
+        <>
         <div className="border border-gray-100 rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
@@ -666,14 +705,20 @@ export default function Home() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={
-                        'px-3 py-1 rounded-full text-xs font-semibold ' +
-                        statusColors[c.status]
-                      }
-                    >
-                      {c.status}
-                    </span>
+                    <select
+                  value={c.status}
+                  onChange={(e) => updateStatus(c.id, e.target.value as Status)}
+                  className={
+                    'px-3 py-1 rounded-full text-xs font-semibold border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-300 ' +
+                    statusColors[c.status]
+                  }
+                >
+                  {statusOptions.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
                   </td>
                   <td className="px-4 py-3 text-gray-700 text-xs">
                     {c.lastContact}
@@ -711,6 +756,47 @@ export default function Home() {
         <div className="text-center text-xs text-gray-400">
           Showing {sorted.length} of {contacts.length} CRM contacts
         </div>
+        </>
+      )}
+        {viewMode === 'board' && (
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {statusOptions.map((status) => (
+              <div
+                key={status}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => {
+                  if (dragContactId != null) updateStatus(dragContactId, status);
+                  setDragContactId(null);
+                }}
+                className="bg-gray-50 rounded-xl p-3 min-h-[220px] border border-gray-100"
+              >
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <h3 className="font-bold text-xs uppercase tracking-wide text-gray-500">{status}</h3>
+                  <span className="text-xs font-semibold text-gray-400">
+                    {boardBase.filter((c) => c.status === status).length}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {boardBase
+                    .filter((c) => c.status === status)
+                    .map((c) => (
+                      <div
+                        key={c.id}
+                        draggable
+                        onDragStart={() => setDragContactId(c.id)}
+                        onClick={() => openView(c)}
+                        className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm cursor-move hover:shadow-md transition-shadow"
+                      >
+                        <div className="font-semibold text-sm text-gray-900">{c.name}</div>
+                        <div className="text-xs text-gray-500">{c.company}</div>
+                        <div className="text-xs text-gray-400 mt-1">{c.city}</div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       {modalMode && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
