@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import sql from '../../../lib/db';
+import { ensureSchema } from '../../../lib/ensure-schema';
 
 export async function GET() {
+  await ensureSchema();
   const contacts = await sql`SELECT * FROM contacts ORDER BY id`;
   const interactions = await sql`SELECT * FROM interactions ORDER BY id DESC`;
   const result = contacts.map((c: any) => ({
@@ -30,6 +32,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  await ensureSchema();
   const body = await request.json();
   const [row] = await sql`
     INSERT INTO contacts (name, company, city, role, email, phone, status, last_contact, created, notes)

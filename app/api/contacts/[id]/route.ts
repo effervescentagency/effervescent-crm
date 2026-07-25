@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import sql from '../../../../lib/db';
+import { ensureSchema } from '../../../../lib/ensure-schema';
 
 const fieldMap: Record<string, string> = {
   name: 'name',
@@ -15,6 +16,7 @@ const fieldMap: Record<string, string> = {
 };
 
 export async function PATCH(request: Request, context: any) {
+  await ensureSchema();
   const id = Number(context.params.id);
   const body = await request.json();
   const mapped: Record<string, any> = {};
@@ -42,6 +44,7 @@ export async function PATCH(request: Request, context: any) {
 }
 
 export async function DELETE(request: Request, context: any) {
+  await ensureSchema();
   const id = Number(context.params.id);
   await sql`DELETE FROM contacts WHERE id = ${id}`;
   return NextResponse.json({ ok: true });

@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
-import sql from '../../../lib/db';
-import seedData from '../../../lib/seed-data.json';
+import sql from './db';
+import seedData from './seed-data.json';
 
-export async function POST() {
+let ready: Promise<void> | null = null;
+
+async function init() {
   await sql`
     CREATE TABLE IF NOT EXISTS contacts (
       id SERIAL PRIMARY KEY,
@@ -49,6 +50,11 @@ export async function POST() {
       }
     }
   }
+}
 
-  return NextResponse.json({ ok: true, seeded: count === 0 });
+export function ensureSchema() {
+  if (!ready) {
+    ready = init();
+  }
+  return ready;
 }

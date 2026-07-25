@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import sql from '../../../../../lib/db';
+import { ensureSchema } from '../../../../../lib/ensure-schema';
 
 export async function POST(request: Request, context: any) {
+  await ensureSchema();
   const id = Number(context.params.id);
   const body = await request.json();
   const [row] = await sql`
