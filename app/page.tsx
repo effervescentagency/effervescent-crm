@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-type Status = 'Prospect' | 'Lead' | 'Client' | 'Inactive';
+type Status = 'New Lead' | 'Contacted' | 'Negotiation' | 'Won' | 'Lost';
 type RoleType =
   | 'Manager'
   | 'Partner'
@@ -29,10 +29,11 @@ interface Contact {
   interactions: Interaction[];
 }
 const statusColors: Record<Status, string> = {
-  Prospect: 'bg-purple-100 text-purple-700',
-  Lead: 'bg-yellow-100 text-yellow-700',
-  Client: 'bg-green-100 text-green-700',
-  Inactive: 'bg-gray-100 text-gray-600',
+  'New Lead': 'bg-purple-100 text-purple-700',
+  Contacted: 'bg-blue-100 text-blue-700',
+  Negotiation: 'bg-yellow-100 text-yellow-700',
+  Won: 'bg-green-100 text-green-700',
+  Lost: 'bg-gray-100 text-gray-600',
 };
 const roleOptions: RoleType[] = [
   'Manager',
@@ -41,7 +42,7 @@ const roleOptions: RoleType[] = [
   'Staff Member',
   'Other',
 ];
-const statusOptions: Status[] = ['Prospect', 'Lead', 'Client', 'Inactive'];
+const statusOptions: Status[] = ['New Lead', 'Contacted', 'Negotiation', 'Won', 'Lost'];
 const methodOptions = ['Email', 'Phone Call', 'WhatsApp', 'In-Person', 'Other'];
 const seedContacts: Contact[] = [
   {
@@ -52,7 +53,7 @@ const seedContacts: Contact[] = [
     role: 'Manager',
     email: 'marcus@romeventures.net',
     phone: '+44 7700 900255',
-    status: 'Prospect',
+    status: 'New Lead',
     lastContact: '21 Jul 2026',
     created: '20 Jul 2026',
     notes: 'Interested in executive search services for Q3 hiring.',
@@ -74,7 +75,7 @@ const seedContacts: Contact[] = [
     role: 'Business Owner',
     email: 'elena@apextech.io',
     phone: '+44 7700 900143',
-    status: 'Lead',
+    status: 'Contacted',
     lastContact: '13 Jul 2026',
     created: '10 Jul 2026',
     notes: 'Growing startup, may need 3-5 engineering hires this year.',
@@ -96,7 +97,7 @@ const seedContacts: Contact[] = [
     role: 'Partner',
     email: 'alexander@wrightcorp.com',
     phone: '+44 7700 900077',
-    status: 'Client',
+    status: 'Won',
     lastContact: '30 Jun 2026',
     created: '25 Jun 2026',
     notes:
@@ -298,7 +299,7 @@ export default function Home() {
     company: '',
     city: '',
     role: 'Manager' as RoleType,
-    status: 'Prospect' as Status,
+    status: 'New Lead' as Status,
     notes: '',
   });
   const [notesDraft, setNotesDraft] = useState('');
@@ -357,7 +358,7 @@ export default function Home() {
       company: '',
       city: '',
       role: 'Manager',
-      status: 'Prospect',
+      status: 'New Lead',
       notes: '',
     });
     setModalMode('add');
@@ -517,51 +518,62 @@ export default function Home() {
                   : 'bg-white text-gray-700 border-gray-200')
               }
             >
-              All Contacts <span className="ml-1">{counts('All')}</span>
+              All <span className="ml-1">{counts('All')}</span>
             </button>
             <button
-              onClick={() => setFilter('Prospect')}
+              onClick={() => setFilter('New Lead')}
               className={
                 'px-4 py-2 rounded-full text-sm font-medium border ' +
-                (filter === 'Prospect'
+                (filter === 'New Lead'
                   ? 'bg-pink-300 text-white border-pink-300'
                   : 'bg-white text-gray-700 border-gray-200')
               }
             >
-              Prospects <span className="ml-1">{counts('Prospect')}</span>
+              New Lead <span className="ml-1">{counts('New Lead')}</span>
             </button>
             <button
-              onClick={() => setFilter('Lead')}
+              onClick={() => setFilter('Contacted')}
               className={
                 'px-4 py-2 rounded-full text-sm font-medium border ' +
-                (filter === 'Lead'
+                (filter === 'Contacted'
                   ? 'bg-pink-300 text-white border-pink-300'
                   : 'bg-white text-gray-700 border-gray-200')
               }
             >
-              Leads <span className="ml-1">{counts('Lead')}</span>
+              Contacted <span className="ml-1">{counts('Contacted')}</span>
             </button>
             <button
-              onClick={() => setFilter('Client')}
+              onClick={() => setFilter('Negotiation')}
               className={
                 'px-4 py-2 rounded-full text-sm font-medium border ' +
-                (filter === 'Client'
+                (filter === 'Negotiation'
                   ? 'bg-pink-300 text-white border-pink-300'
                   : 'bg-white text-gray-700 border-gray-200')
               }
             >
-              Clients <span className="ml-1">{counts('Client')}</span>
+              Negotiation <span className="ml-1">{counts('Negotiation')}</span>
             </button>
             <button
-              onClick={() => setFilter('Inactive')}
+              onClick={() => setFilter('Won')}
               className={
                 'px-4 py-2 rounded-full text-sm font-medium border ' +
-                (filter === 'Inactive'
+                (filter === 'Won'
                   ? 'bg-pink-300 text-white border-pink-300'
                   : 'bg-white text-gray-700 border-gray-200')
               }
             >
-              Inactive <span className="ml-1">{counts('Inactive')}</span>
+              Won <span className="ml-1">{counts('Won')}</span>
+            </button>
+            <button
+              onClick={() => setFilter('Lost')}
+              className={
+                'px-4 py-2 rounded-full text-sm font-medium border ' +
+                (filter === 'Lost'
+                  ? 'bg-pink-300 text-white border-pink-300'
+                  : 'bg-white text-gray-700 border-gray-200')
+              }
+            >
+              Lost <span className="ml-1">{counts('Lost')}</span>
             </button>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -861,14 +873,7 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <span
                   className={
-                    'px-3 py-1 rounded-full text-xs font-semibold bg-white ' +
-                    (viewing.status === 'Prospect'
-                      ? 'text-purple-700'
-                      : viewing.status === 'Lead'
-                      ? 'text-yellow-700'
-                      : viewing.status === 'Client'
-                      ? 'text-green-700'
-                      : 'text-gray-600')
+                    'px-3 py-1 rounded-full text-xs font-semibold ' + statusColors[viewing.status]
                   }
                 >
                   {viewing.status}
