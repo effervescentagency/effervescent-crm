@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 type Status = 'New Lead' | 'Contacted' | 'Negotiation' | 'Won' | 'Lost';
 type RoleType =
   | 'Manager'
@@ -283,7 +283,14 @@ function SearchIcon() {
   );
 }
 export default function Home() {
-  const [contacts, setContacts] = useState<Contact[]>(seedContacts);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+
+  useEffect(() => {
+    fetch('/api/contacts')
+      .then((res) => res.json())
+      .then((data) => setContacts(data))
+      .catch((err) => console.error('Failed to load contacts', err));
+  }, []);
   const [filter, setFilter] = useState<'All' | Status>('All');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
@@ -326,6 +333,11 @@ export default function Home() {
   }
   function updateStatus(id: number, status: Status) {
     setContacts(contacts.map((c) => (c.id === id ? { ...c, status } : c)));
+    fetch(`/api/contacts/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    }).catch((err) => console.error('Failed to update status', err));
   }
   function compareValues(key: string, a: Contact, b: Contact) {
     if (key === 'created')
@@ -400,25 +412,30 @@ export default function Home() {
   function submitForm() {
     if (!form.name || !form.email) return;
     if (modalMode === 'add') {
-      const newContact: Contact = {
-        id: Date.now(),
-        name: form.name,
-        company: form.company,
-        city: form.city,
-        role: form.role,
-        email: form.email,
-        phone: form.phone,
-        status: form.status,
-        lastContact: '-',
-        created: new Date().toLocaleDateString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
+      const createdDate = new Date().toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+      fetch('/api/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          company: form.company,
+          city: form.city,
+          role: form.role,
+          email: form.email,
+          phone: form.phone,
+          status: form.status,
+          lastContact: '-',
+          created: createdDate,
+          notes: form.notes,
         }),
-        notes: form.notes,
-        interactions: [],
-      };
-      setContacts([newContact, ...contacts]);
+      })
+        .then((res) => res.json())
+        .then((newContact) => setContacts([newContact, ...contacts]))
+        .catch((err) => console.error('Failed to add contact', err));
     } else if (modalMode === 'edit' && editingId !== null) {
       setContacts(
         contacts.map((c) =>
@@ -426,23 +443,40 @@ export default function Home() {
             ? {
                 ...c,
                 name: form.name,
-                email: form.email,
-                phone: form.phone,
                 company: form.company,
                 city: form.city,
                 role: form.role,
+                email: form.email,
+                phone: form.phone,
                 status: form.status,
                 notes: form.notes,
               }
             : c
         )
       );
+      fetch(`/api/contacts/${editingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          company: form.company,
+          city: form.city,
+          role: form.role,
+          email: form.email,
+          phone: form.phone,
+          status: form.status,
+          notes: form.notes,
+        }),
+      }).catch((err) => console.error('Failed to update contact', err));
     }
     closeModal();
   }
   function deleteContact(id: number) {
     setContacts(contacts.filter((c) => c.id !== id));
     if (viewingId === id) setViewingId(null);
+    fetch(`/api/contacts/${id}`, { method: 'DELETE' }).catch((err) =>
+      console.error('Failed to delete contact', err)
+    );
   }
   function openView(c: Contact) {
     setViewingId(c.id);
@@ -456,31 +490,39 @@ export default function Home() {
   }
   function saveNotes() {
     if (viewingId === null) return;
-    setContacts(
-      contacts.map((c) =>
-        c.id === viewingId ? { ...c, notes: notesDraft } : c
-      )
+    setContacts(contacts.map((c) =>
+      c.id === viewingId ? { ...c, notes: notesDraft } : c
+    )
     );
+    fetch(`/api/contacts/${viewingId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notes: notesDraft }),
+    }).catch((err) => console.error('Failed to save notes', err));
   }
   function logInteraction() {
     if (viewingId === null || !newInteraction.notes) return;
+    const interaction: Interaction = {
+      id: Date.now(),
+      date: newInteraction.date,
+      method: newInteraction.method,
+      contactedBy: newInteraction.contactedBy,
+      notes: newInteraction.notes,
+    };
     setContacts(
       contacts.map((c) => {
         if (c.id !== viewingId) return c;
-        const interaction: Interaction = {
-          id: Date.now(),
-          date: newInteraction.date,
-          method: newInteraction.method,
-          contactedBy: newInteraction.contactedBy,
-          notes: newInteraction.notes,
-        };
         return {
           ...c,
           interactions: [interaction, ...c.interactions],
-          lastContact: newInteraction.date,
         };
       })
     );
+    fetch(`/api/contacts/${viewingId}/interactions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newInteraction),
+    }).catch((err) => console.error('Failed to log interaction', err));
     setNewInteraction({
       date: new Date().toISOString().slice(0, 10),
       method: 'Email',
