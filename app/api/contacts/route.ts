@@ -18,6 +18,10 @@ export async function GET() {
     lastContact: c.last_contact,
     created: c.created,
     notes: c.notes,
+      shiftVenueDetails: c.shift_venue_details,
+      bottlePrice: c.bottle_price,
+      shotPrice: c.shot_price,
+      address: c.address,
     interactions: interactions
       .filter((i: any) => i.contact_id === c.id)
       .map((i: any) => ({
@@ -51,6 +55,10 @@ export async function POST(request: Request) {
     lastContact: row.last_contact,
     created: row.created,
     notes: row.notes,
+    shiftVenueDetails: row.shift_venue_details,
+    bottlePrice: row.bottle_price,
+    shotPrice: row.shot_price,
+    address: row.address,
     interactions: [],
   });
 }

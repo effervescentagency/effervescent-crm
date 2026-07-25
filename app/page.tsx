@@ -26,6 +26,10 @@ interface Contact {
   lastContact: string;
   created: string;
   notes: string;
+  shiftVenueDetails: string;
+  bottlePrice: string;
+  shotPrice: string;
+  address: string;
   interactions: Interaction[];
 }
 const statusColors: Record<Status, string> = {
@@ -44,76 +48,6 @@ const roleOptions: RoleType[] = [
 ];
 const statusOptions: Status[] = ['New Lead', 'Contacted', 'Negotiation', 'Won', 'Lost'];
 const methodOptions = ['Email', 'Phone Call', 'WhatsApp', 'In-Person', 'Other'];
-const seedContacts: Contact[] = [
-  {
-    id: 1,
-    name: 'Marcus Aurelius',
-    company: 'Rome Ventures Ltd',
-    city: 'London',
-    role: 'Manager',
-    email: 'marcus@romeventures.net',
-    phone: '+44 7700 900255',
-    status: 'New Lead',
-    lastContact: '21 Jul 2026',
-    created: '20 Jul 2026',
-    notes: 'Interested in executive search services for Q3 hiring.',
-    interactions: [
-      {
-        id: 1,
-        date: '21 Jul 2026',
-        method: 'Email',
-        contactedBy: 'Sarah (Sales)',
-        notes: 'Responded to their inquiry about candidate placement fees.',
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Elena Rostova',
-    company: 'Apex Tech Labs',
-    city: 'Manchester',
-    role: 'Business Owner',
-    email: 'elena@apextech.io',
-    phone: '+44 7700 900143',
-    status: 'Contacted',
-    lastContact: '13 Jul 2026',
-    created: '10 Jul 2026',
-    notes: 'Growing startup, may need 3-5 engineering hires this year.',
-    interactions: [
-      {
-        id: 1,
-        date: '13 Jul 2026',
-        method: 'Other',
-        contactedBy: 'Tom (BD)',
-        notes: 'Sent LinkedIn connection request and intro message.',
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Alexander Wright',
-    company: 'Wright Corporate Services',
-    city: 'Birmingham',
-    role: 'Partner',
-    email: 'alexander@wrightcorp.com',
-    phone: '+44 7700 900077',
-    status: 'Won',
-    lastContact: '30 Jun 2026',
-    created: '25 Jun 2026',
-    notes:
-      'Key strategic partner. Interested in hiring 15+ candidate roles for summer campaign.',
-    interactions: [
-      {
-        id: 1,
-        date: '30 Jun 2026',
-        method: 'Email',
-        contactedBy: 'Sarah (Sales)',
-        notes:
-          'Introductory email sent outlining our onboarding timelines and pricing structure.',
-      },
-    ],
-  },
-];
 function EyeIcon() {
   return (
     <svg
@@ -312,6 +246,7 @@ export default function Home() {
     notes: '',
   });
   const [notesDraft, setNotesDraft] = useState('');
+  const [wonDraft, setWonDraft] = useState({ shiftVenueDetails: "", bottlePrice: "", shotPrice: "", address: "" });
   const [newInteraction, setNewInteraction] = useState({
     date: new Date().toISOString().slice(0, 10),
     method: 'Email',
@@ -481,6 +416,7 @@ export default function Home() {
   function openView(c: Contact) {
     setViewingId(c.id);
     setNotesDraft(c.notes);
+    setWonDraft({ shiftVenueDetails: c.shiftVenueDetails || "", bottlePrice: c.bottlePrice || "", shotPrice: c.shotPrice || "", address: c.address || "" });
     setNewInteraction({
       date: new Date().toISOString().slice(0, 10),
       method: 'Email',
@@ -499,6 +435,17 @@ export default function Home() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ notes: notesDraft }),
     }).catch((err) => console.error('Failed to save notes', err));
+  }
+  function saveWonDetails() {
+    if (viewingId === null) return;
+    setContacts(contacts.map((c) =>
+      c.id === viewingId ? { ...c, ...wonDraft } : c
+    ));
+    fetch(`/api/contacts/${viewingId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(wonDraft),
+    }).catch((err) => console.error('Failed to save venue details', err));
   }
   function logInteraction() {
     if (viewingId === null || !newInteraction.notes) return;
@@ -1073,6 +1020,53 @@ export default function Home() {
               >
                 Save Account Notes
               </button>
+                {viewing.status === "Won" && (
+                <div>
+                  <div className="text-xs font-bold text-pink-400 mb-2">
+                    SHIFT & VENUE DETAILS
+                  </div>
+                  <textarea
+                    value={wonDraft.shiftVenueDetails}
+                    onChange={(e) => setWonDraft({ ...wonDraft, shiftVenueDetails: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 h-20"
+                  />
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 mb-1">BOTTLE PRICE</div>
+                      <input
+                        type="text"
+                        value={wonDraft.bottlePrice}
+                        onChange={(e) => setWonDraft({ ...wonDraft, bottlePrice: e.target.value })}
+                        className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900"
+                      />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 mb-1">SHOT PRICE</div>
+                      <input
+                        type="text"
+                        value={wonDraft.shotPrice}
+                        onChange={(e) => setWonDraft({ ...wonDraft, shotPrice: e.target.value })}
+                        className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900"
+                      />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 mb-1">ADDRESS</div>
+                      <input
+                        type="text"
+                        value={wonDraft.address}
+                        onChange={(e) => setWonDraft({ ...wonDraft, address: e.target.value })}
+                        className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={saveWonDetails}
+                    className="w-full bg-gray-900 text-white rounded-xl py-2.5 text-sm font-bold mt-2"
+                  >
+                    Save Venue Details
+                  </button>
+                </div>
+                )}
               <div>
                 <div className="text-xs font-bold text-pink-400 mb-3">
                   CONVERSATION HISTORY

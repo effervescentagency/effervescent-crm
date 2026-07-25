@@ -13,6 +13,10 @@ const fieldMap: Record<string, string> = {
   lastContact: 'last_contact',
   created: 'created',
   notes: 'notes',
+  shiftVenueDetails: 'shift_venue_details',
+  bottlePrice: 'bottle_price',
+  shotPrice: 'shot_price',
+  address: 'address',
 };
 
 export async function PATCH(request: Request, context: any) {
@@ -40,6 +44,10 @@ export async function PATCH(request: Request, context: any) {
     lastContact: row.last_contact,
     created: row.created,
     notes: row.notes,
+    shiftVenueDetails: row.shift_venue_details,
+    bottlePrice: row.bottle_price,
+    shotPrice: row.shot_price,
+    address: row.address,
   });
 }
 

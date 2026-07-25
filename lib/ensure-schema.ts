@@ -19,6 +19,11 @@ async function init() {
       notes TEXT
     )
   `;
+  await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS shift_venue_details TEXT`;
+  await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS bottle_price TEXT`;
+  await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS shot_price TEXT`;
+  await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS address TEXT`;
+
   await sql`
     CREATE TABLE IF NOT EXISTS interactions (
       id SERIAL PRIMARY KEY,
