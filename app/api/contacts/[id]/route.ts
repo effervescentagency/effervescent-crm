@@ -17,6 +17,8 @@ const fieldMap: Record<string, string> = {
   bottlePrice: 'bottle_price',
   shotPrice: 'shot_price',
   address: 'address',
+  website: 'website',
+  instagram: 'instagram',
   lostReason: 'lost_reason',
   lostNotes: 'lost_notes',
 };
@@ -50,6 +52,8 @@ export async function PATCH(request: Request, context: any) {
     bottlePrice: row.bottle_price,
     shotPrice: row.shot_price,
     address: row.address,
+    website: row.website,
+    instagram: row.instagram,
     lostReason: row.lost_reason,
     lostNotes: row.lost_notes,
   });

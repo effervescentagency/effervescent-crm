@@ -30,6 +30,8 @@ interface Contact {
   bottlePrice: string;
   shotPrice: string;
   address: string;
+  website: string;
+  instagram: string;
   lostReason: string;
   lostNotes: string;
   interactions: Interaction[];
@@ -276,6 +278,8 @@ export default function Home() {
     phone: '',
     company: '',
     city: '',
+    website: '',
+    instagram: '',
     role: 'Manager' as RoleType,
     status: 'New Lead' as Status,
     notes: '',
@@ -375,6 +379,8 @@ function compareValues(key: string, a: Contact, b: Contact) {
       phone: '',
       company: '',
       city: '',
+      website: '',
+      instagram: '',
       role: 'Manager',
       status: 'New Lead',
       notes: '',
@@ -388,6 +394,8 @@ function compareValues(key: string, a: Contact, b: Contact) {
       phone: c.phone,
       company: c.company,
       city: c.city,
+      website: c.website,
+      instagram: c.instagram,
       role: c.role,
       status: c.status,
       notes: c.notes,
@@ -400,7 +408,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
     setEditingId(null);
   }
   function submitForm() {
-    if (!form.name || !form.email) return;
+    if (!form.name || !form.email || !form.company || !form.city) return;
     if (modalMode === 'add') {
       const createdDate = new Date().toLocaleDateString('en-GB', {
         day: '2-digit',
@@ -414,6 +422,8 @@ function compareValues(key: string, a: Contact, b: Contact) {
           name: form.name,
           company: form.company,
           city: form.city,
+          website: form.website,
+          instagram: form.instagram,
           role: form.role,
           email: form.email,
           phone: form.phone,
@@ -435,6 +445,8 @@ function compareValues(key: string, a: Contact, b: Contact) {
                 name: form.name,
                 company: form.company,
                 city: form.city,
+          website: form.website,
+          instagram: form.instagram,
                 role: form.role,
                 email: form.email,
                 phone: form.phone,
@@ -451,6 +463,8 @@ function compareValues(key: string, a: Contact, b: Contact) {
           name: form.name,
           company: form.company,
           city: form.city,
+          website: form.website,
+          instagram: form.instagram,
           role: form.role,
           email: form.email,
           phone: form.phone,
@@ -818,7 +832,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
                       <div
                         key={c.id}
                         draggable
-                        onDragStart={() => setDragContactId(c.id)}
+                        onDragStart={(e) => { setDragContactId(c.id); try { e.dataTransfer.setData("text/plain", String(c.id)); e.dataTransfer.effectAllowed = "move"; } catch (err) {} }}
                         onClick={() => openView(c)}
                         className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm cursor-move hover:shadow-md transition-shadow"
                       >
@@ -834,7 +848,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
         )}
       </div>
       {modalMode && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[55]">
           <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden shadow-xl">
             <div className="bg-pink-300 px-6 py-4 flex items-center justify-between">
               <div className="text-white font-bold">
@@ -853,7 +867,9 @@ function compareValues(key: string, a: Contact, b: Contact) {
                 </div>
                 <input
                   value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                    onChange={(e) =>
+                    setForm({ ...form, company: e.target.value })
+                  }
                   placeholder="e.g. John Doe"
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900"
                 />
@@ -888,20 +904,18 @@ function compareValues(key: string, a: Contact, b: Contact) {
               </div>
               <div>
                 <div className="text-xs font-bold text-gray-500 mb-1">
-                  COMPANY NAME
+                  COMPANY NAME *
                 </div>
                 <input
                   value={form.company}
-                  onChange={(e) =>
-                    setForm({ ...form, company: e.target.value })
-                  }
+onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="e.g. Acme Corp"
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900"
                 />
               </div>
               <div>
                 <div className="text-xs font-bold text-gray-500 mb-1">
-                  CITY
+                  CITY *
                 </div>
                 <input
                   value={form.city}
@@ -912,7 +926,35 @@ function compareValues(key: string, a: Contact, b: Contact) {
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 mb-1">
+                        WEBSITE
+                      </div>
+                      <input
+                        value={form.website}
+                        onChange={(e) =>
+                          setForm({ ...form, website: e.target.value })
+                        }
+                        placeholder="https://example.com"
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900"
+                      />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 mb-1">
+                        INSTAGRAM
+                      </div>
+                      <input
+                        value={form.instagram}
+                        onChange={(e) =>
+                          setForm({ ...form, instagram: e.target.value })
+                        }
+                        placeholder="https://instagram.com/yourhandle"
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900"
+                      />
+                    </div>
+                  </div>
+<div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-xs font-bold text-gray-500 mb-1">
                     ROLE / FUNCTION
@@ -980,15 +1022,15 @@ function compareValues(key: string, a: Contact, b: Contact) {
         </div>
       )}
       {viewing && (
-        <div className="fixed inset-0 bg-black/40 flex justify-end z-50">
+        <div className="fixed inset-0 bg-black/40 flex justify-end z-40">
           <div className="bg-white w-full max-w-md h-full overflow-y-auto shadow-xl">
             <div className="bg-pink-300 px-6 py-5 flex items-start justify-between">
               <div>
                 <div className="text-white font-bold text-lg">
-                  {viewing.name}
+                  {viewing.company}
                 </div>
                 <div className="text-white/80 text-sm">
-                  {viewing.company} &bull; {viewing.role}
+                  {viewing.name} &bull; {viewing.role}
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -1039,6 +1081,34 @@ function compareValues(key: string, a: Contact, b: Contact) {
                   </div>
                   <div className="text-sm text-gray-900 mt-1">
                     {viewing.created}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1 text-xs font-bold text-gray-500">
+                    WEBSITE
+                  </div>
+                  <div className="text-sm text-gray-900 mt-1 break-all">
+                    {viewing.website ? (
+                      <a href={viewing.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                        {viewing.website}
+                      </a>
+                    ) : (
+                      "-"
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1 text-xs font-bold text-gray-500">
+                    INSTAGRAM
+                  </div>
+                  <div className="text-sm text-gray-900 mt-1 break-all">
+                    {viewing.instagram ? (
+                      <a href={viewing.instagram} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                        {viewing.instagram}
+                      </a>
+                    ) : (
+                      "-"
+                    )}
                   </div>
                 </div>
               </div>
@@ -1233,7 +1303,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
         </div>
       )}
       {lostModalId !== null && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <div className="text-sm font-bold text-gray-900 mb-3">Reason for Losing Deal</div>
             <div className="text-xs text-gray-500 mb-3">Please select a reason before marking this contact as Lost.</div>

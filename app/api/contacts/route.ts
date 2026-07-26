@@ -22,6 +22,8 @@ export async function GET() {
       bottlePrice: c.bottle_price,
       shotPrice: c.shot_price,
       address: c.address,
+    website: c.website,
+    instagram: c.instagram,
     lostReason: c.lost_reason,
     lostNotes: c.lost_notes,
     interactions: interactions
@@ -41,8 +43,8 @@ export async function POST(request: Request) {
   await ensureSchema();
   const body = await request.json();
   const [row] = await sql`
-    INSERT INTO contacts (name, company, city, role, email, phone, status, last_contact, created, notes)
-    VALUES (${body.name}, ${body.company}, ${body.city}, ${body.role}, ${body.email}, ${body.phone}, ${body.status}, ${body.lastContact || '-'}, ${body.created}, ${body.notes})
+    INSERT INTO contacts (name, company, city, role, email, phone, status, last_contact, created, notes, website, instagram)
+    VALUES (${body.name}, ${body.company}, ${body.city}, ${body.role}, ${body.email}, ${body.phone}, ${body.status}, ${body.lastContact || '-'}, ${body.created}, ${body.notes}, ${body.website}, ${body.instagram})
     RETURNING *
   `;
   return NextResponse.json({
@@ -61,6 +63,8 @@ export async function POST(request: Request) {
     bottlePrice: row.bottle_price,
     shotPrice: row.shot_price,
     address: row.address,
+    website: row.website,
+    instagram: row.instagram,
     interactions: [],
   });
 }
