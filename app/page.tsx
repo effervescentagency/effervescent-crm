@@ -1069,8 +1069,19 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                   <div className="flex items-center gap-1 text-xs font-bold text-gray-500">
                     <PhoneIcon /> PHONE NUMBER
                   </div>
-                  <div className="text-sm text-gray-900 mt-1">
-                    {viewing.phone}
+                  <div className='text-sm text-gray-900 mt-1'>
+                    {viewing.phone ? (
+                      <a
+                        href={`https://wa.me/${viewing.phone.replace(/[^0-9]/g, '')}`}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-blue-600 hover:underline'
+                      >
+                        {viewing.phone}
+                      </a>
+                    ) : (
+                      '-'
+                    )}
                   </div>
                 </div>
                 <div>
