@@ -1062,7 +1062,18 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                     <MailIcon /> EMAIL ADDRESS
                   </div>
                   <div className="text-sm text-gray-900 mt-1">
-                    {viewing.email}
+                    {viewing.email ? (
+                      <a
+                        href={`https://mail.google.com/mail/?view=cm&fs=1&to=${viewing.email}`}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-blue-600 hover:underline'
+                      >
+                        {viewing.email}
+                      </a>
+                    ) : (
+                      '-'
+                    )}
                   </div>
                 </div>
                 <div>
