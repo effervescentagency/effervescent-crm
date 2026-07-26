@@ -350,7 +350,8 @@ function compareValues(key: string, a: Contact, b: Contact) {
       c.name.toLowerCase().includes(q) ||
       c.company.toLowerCase().includes(q) ||
       c.email.toLowerCase().includes(q) ||
-      c.phone.toLowerCase().includes(q);
+      c.phone.toLowerCase().includes(q) ||
+      c.city.toLowerCase().includes(q);
     return matchesStatus && matchesRole && matchesSearch;
   });
   const sorted = sortKey
@@ -368,7 +369,8 @@ function compareValues(key: string, a: Contact, b: Contact) {
       c.name.toLowerCase().includes(q) ||
       c.company.toLowerCase().includes(q) ||
       c.email.toLowerCase().includes(q) ||
-      c.phone.toLowerCase().includes(q);
+      c.phone.toLowerCase().includes(q) ||
+      c.city.toLowerCase().includes(q);
     return matchesRole && matchesSearch;
   });
   const viewing = contacts.find((c) => c.id === viewingId) || null;
@@ -539,6 +541,10 @@ function compareValues(key: string, a: Contact, b: Contact) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newInteraction),
     }).catch((err) => console.error('Failed to log interaction', err));
+    const current = contacts.find((c) => c.id === viewingId);
+    if (current && current.status === 'New Lead') {
+      updateStatus(viewingId, 'Contacted');
+    }
     setNewInteraction({
       date: new Date().toISOString().slice(0, 10),
       method: 'Email',
@@ -570,7 +576,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search CRM by name, company, email, phone..."
+              placeholder="Search CRM by name, company, email, phone, city..."
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
             />
           </div>
@@ -694,16 +700,16 @@ function compareValues(key: string, a: Contact, b: Contact) {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
                 <th
-                  onClick={() => toggleSort('name')}
-                  className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
-                >
-                  NAME {sortArrow('name')}
-                </th>
-                <th
                   onClick={() => toggleSort('role')}
                   className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
                 >
-                  ROLE &amp; COMPANY {sortArrow('role')}
+                  COMPANY {sortArrow('role')}
+                </th>
+                <th
+                  onClick={() => toggleSort('name')}
+                  className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
+                >
+                  NAME &amp; ROLE {sortArrow('name')}
                 </th>
                 <th
                   onClick={() => toggleSort('city')}
@@ -742,13 +748,13 @@ function compareValues(key: string, a: Contact, b: Contact) {
                     className="px-4 py-3 font-semibold text-gray-900 cursor-pointer hover:underline"
                     onClick={() => openView(c)}
                   >
-                    {c.name}
+                    {c.company}
                   </td>
                   <td
                     className="px-4 py-3 cursor-pointer"
                     onClick={() => openView(c)}
                   >
-                    <div className="text-gray-900">{c.company}</div>
+                    <div className="text-gray-900">{c.name}</div>
                     <div className="text-xs text-gray-500">{c.role}</div>
                   </td>
                   <td className="px-4 py-3 text-gray-700 text-xs">{c.city}</td>
