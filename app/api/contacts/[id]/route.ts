@@ -21,6 +21,7 @@ const fieldMap: Record<string, string> = {
   instagram: 'instagram',
   lostReason: 'lost_reason',
   lostNotes: 'lost_notes',
+  assignedTo: 'assigned_to',
 };
 
 export async function PATCH(request: Request, context: any) {
@@ -42,6 +43,7 @@ export async function PATCH(request: Request, context: any) {
     company: row.company,
     city: row.city,
     role: row.role,
+    assignedTo: row.assigned_to,
     email: row.email,
     phone: row.phone,
     status: row.status,

@@ -27,6 +27,7 @@ async function init() {
   await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS lost_notes TEXT`;
   await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS website TEXT`;
   await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS instagram TEXT`;
+  await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS assigned_to TEXT DEFAULT 'Unassigned'`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS interactions (

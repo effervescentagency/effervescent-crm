@@ -7,6 +7,7 @@ type RoleType =
   | 'Business Owner'
   | 'Staff Member'
   | 'Other';
+type AssignedTo = 'Unassigned' | 'Maddison' | 'User 1';
 interface Interaction {
   id: number;
   date: string;
@@ -20,6 +21,7 @@ interface Contact {
   company: string;
   city: string;
   role: RoleType;
+  assignedTo: AssignedTo;
   email: string;
   phone: string;
   status: Status;
@@ -50,6 +52,7 @@ const roleOptions: RoleType[] = [
   'Staff Member',
   'Other',
 ];
+const assignedToOptions: AssignedTo[] = ['Unassigned', 'Maddison', 'User 1'];
 const statusOptions: Status[] = ['New Lead', 'Contacted', 'Negotiation', 'Won', 'Lost'];
 const lostReasonOptions: string[] = ['Uncontactable/ghosted', 'Not interested', 'Happy with current supplier', 'In-house', 'Venue closure', 'Management Change', 'Unhappy with service received', 'Low sales volume', 'Unsuitable for service', 'Effervescent Cancelled Contract', 'Other'];
 const methodOptions = ['Email', 'Phone Call', 'WhatsApp', 'In-Person', 'Other'];
@@ -263,7 +266,7 @@ export default function Home() {
       .catch((err) => console.error('Failed to load contacts', err));
   }, []);
   const [filter, setFilter] = useState<'All' | Status>('All');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [assignedFilter, setAssignedFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [modalMode, setModalMode] = useState<'add' | 'edit' | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -281,6 +284,7 @@ export default function Home() {
     website: '',
     instagram: '',
     role: 'Manager' as RoleType,
+    assignedTo: 'Unassigned' as AssignedTo,
     status: 'New Lead' as Status,
     notes: '',
   });
@@ -343,7 +347,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
   }
   const filtered = contacts.filter((c) => {
     const matchesStatus = filter === 'All' || c.status === filter;
-    const matchesRole = roleFilter === 'all' || c.role === roleFilter;
+    const matchesAssigned = assignedFilter === 'all' || c.assignedTo === assignedFilter;
     const q = search.toLowerCase();
     const matchesSearch =
       !q ||
@@ -352,7 +356,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
       c.email.toLowerCase().includes(q) ||
       c.phone.toLowerCase().includes(q) ||
       c.city.toLowerCase().includes(q);
-    return matchesStatus && matchesRole && matchesSearch;
+    return matchesStatus && matchesAssigned && matchesSearch;
   });
   const sorted = sortKey
     ? [...filtered].sort((a, b) =>
@@ -362,7 +366,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
       )
     : filtered;
   const boardBase = contacts.filter((c) => {
-    const matchesRole = roleFilter === 'all' || c.role === roleFilter;
+    const matchesAssigned = assignedFilter === 'all' || c.assignedTo === assignedFilter;
     const q = search.toLowerCase();
     const matchesSearch =
       !q ||
@@ -371,7 +375,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
       c.email.toLowerCase().includes(q) ||
       c.phone.toLowerCase().includes(q) ||
       c.city.toLowerCase().includes(q);
-    return matchesRole && matchesSearch;
+    return matchesAssigned && matchesSearch;
   });
   const viewing = contacts.find((c) => c.id === viewingId) || null;
   function openAdd() {
@@ -384,6 +388,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
       website: '',
       instagram: '',
       role: 'Manager',
+      assignedTo: 'Unassigned',
       status: 'New Lead',
       notes: '',
     });
@@ -399,6 +404,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
       website: c.website,
       instagram: c.instagram,
       role: c.role,
+      assignedTo: c.assignedTo,
       status: c.status,
       notes: c.notes,
     });
@@ -427,6 +433,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
           website: form.website,
           instagram: form.instagram,
           role: form.role,
+          assignedTo: form.assignedTo,
           email: form.email,
           phone: form.phone,
           status: form.status,
@@ -450,6 +457,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
           website: form.website,
           instagram: form.instagram,
                 role: form.role,
+                assignedTo: form.assignedTo,
                 email: form.email,
                 phone: form.phone,
                 status: form.status,
@@ -468,6 +476,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
           website: form.website,
           instagram: form.instagram,
           role: form.role,
+          assignedTo: form.assignedTo,
           email: form.email,
           phone: form.phone,
           status: form.status,
@@ -678,14 +687,14 @@ function compareValues(key: string, a: Contact, b: Contact) {
             </button>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span className="font-medium">ROLE:</span>
+            <span className="font-medium">ASSIGNED TO:</span>
             <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
+              value={assignedFilter}
+              onChange={(e) => setAssignedFilter(e.target.value)}
               className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm"
             >
-              <option value="all">All Roles</option>
-              {roleOptions.map((r) => (
+              <option value="all">All</option>
+              {assignedToOptions.map((r) => (
                 <option key={r} value={r}>
                   {r}
                 </option>
@@ -999,6 +1008,26 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                 </div>
               </div>
               <div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-xs font-bold text-gray-500 mb-1">
+                  ASSIGNED TO
+                </div>
+                <select
+                  value={form.assignedTo}
+                  onChange={(e) =>
+                    setForm({ ...form, assignedTo: e.target.value as AssignedTo })
+                  }
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900"
+                >
+                  {assignedToOptions.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
                 <div className="text-xs font-bold text-gray-500 mb-1">
                   GENERAL NOTES
                 </div>

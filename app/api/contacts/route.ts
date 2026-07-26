@@ -12,6 +12,7 @@ export async function GET() {
     company: c.company,
     city: c.city,
     role: c.role,
+    assignedTo: c.assigned_to,
     email: c.email,
     phone: c.phone,
     status: c.status,
@@ -43,8 +44,8 @@ export async function POST(request: Request) {
   await ensureSchema();
   const body = await request.json();
   const [row] = await sql`
-    INSERT INTO contacts (name, company, city, role, email, phone, status, last_contact, created, notes, website, instagram)
-    VALUES (${body.name}, ${body.company}, ${body.city}, ${body.role}, ${body.email}, ${body.phone}, ${body.status}, ${body.lastContact || '-'}, ${body.created}, ${body.notes}, ${body.website}, ${body.instagram})
+    INSERT INTO contacts (name, company, city, role, email, phone, status, last_contact, created, notes, website, instagram, assigned_to)
+    VALUES (${body.name}, ${body.company}, ${body.city}, ${body.role}, ${body.email}, ${body.phone}, ${body.status}, ${body.lastContact || '-'}, ${body.created}, ${body.notes}, ${body.website}, ${body.instagram}, ${body.assignedTo})
     RETURNING *
   `;
   return NextResponse.json({
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
     company: row.company,
     city: row.city,
     role: row.role,
+    assignedTo: row.assigned_to,
     email: row.email,
     phone: row.phone,
     status: row.status,
