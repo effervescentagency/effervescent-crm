@@ -863,14 +863,14 @@ function compareValues(key: string, a: Contact, b: Contact) {
             <div className="p-6 space-y-4">
               <div>
                 <div className="text-xs font-bold text-gray-500 mb-1">
-                  FULL NAME *
+                  COMPANY NAME *
                 </div>
                 <input
-                  value={form.name}
+                  value={form.company}
                                     onChange={(e) =>
                     setForm({ ...form, company: e.target.value })
                   }
-                  placeholder="e.g. John Doe"
+                  placeholder="e.g. Acme Corp"
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900"
                 />
               </div>
@@ -904,12 +904,12 @@ function compareValues(key: string, a: Contact, b: Contact) {
               </div>
               <div>
                 <div className="text-xs font-bold text-gray-500 mb-1">
-                  COMPANY NAME *
+                  FULL NAME *
                 </div>
                 <input
-                  value={form.company}
+                  value={form.name}
 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="e.g. Acme Corp"
+                  placeholder="e.g. John Doe"
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900"
                 />
               </div>
