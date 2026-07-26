@@ -48,6 +48,33 @@ const roleOptions: RoleType[] = [
 ];
 const statusOptions: Status[] = ['New Lead', 'Contacted', 'Negotiation', 'Won', 'Lost'];
 const methodOptions = ['Email', 'Phone Call', 'WhatsApp', 'In-Person', 'Other'];
+function lastContactInfo(c: Contact) {
+  const dates = (c.interactions || [])
+    .map((it: Interaction) => new Date(it.date).getTime())
+    .filter((t: number) => !isNaN(t));
+  if (dates.length === 0) return { text: "No contact yet", overdue: false };
+  const days = Math.floor((Date.now() - Math.max(...dates)) / 86400000);
+  let text = "";
+  if (days <= 0) text = "Today";
+  else if (days === 1) text = "1 day ago";
+  else if (days < 7) text = days + " days ago";
+  else if (days < 30) {
+    const weeks = Math.floor(days / 7);
+    text = weeks + (weeks === 1 ? " week ago" : " weeks ago");
+  } else {
+    const months = Math.floor(days / 30);
+    text = months + (months === 1 ? " month ago" : " months ago");
+  }
+  return { text, overdue: days > 7 };
+}
+function LastContactCell({ c }: { c: Contact }) {
+  const info = lastContactInfo(c);
+  return (
+    <span className={info.overdue ? "text-red-600 font-bold" : "text-gray-700"}>
+      {info.text}
+    </span>
+  );
+}
 function EyeIcon() {
   return (
     <svg
@@ -642,9 +669,7 @@ export default function Home() {
                 >
                   CITY {sortArrow('city')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase">
-                  CONTACT INFO
-                </th>
+                
                 <th
                   onClick={() => toggleSort('status')}
                   className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
@@ -685,14 +710,7 @@ export default function Home() {
                     <div className="text-xs text-gray-500">{c.role}</div>
                   </td>
                   <td className="px-4 py-3 text-gray-700 text-xs">{c.city}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 text-gray-600 text-xs">
-                      <MailIcon /> {c.email}
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-600 text-xs mt-1">
-                      <PhoneIcon /> {c.phone}
-                    </div>
-                  </td>
+                  
                   <td className="px-4 py-3">
                     <select
                   value={c.status}
@@ -709,8 +727,8 @@ export default function Home() {
                   ))}
                 </select>
                   </td>
-                  <td className="px-4 py-3 text-gray-700 text-xs">
-                    {c.lastContact}
+                  <td className="px-4 py-3 text-xs">
+                    <LastContactCell c={c} />
                   </td>
                   <td className="px-4 py-3 text-gray-700 text-xs">
                     {c.created}
