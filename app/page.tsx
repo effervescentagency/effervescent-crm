@@ -293,6 +293,10 @@ export default function Home() {
 const [lostModalId, setLostModalId] = useState<number | null>(null);
 const [lostReasonDraft, setLostReasonDraft] = useState("");
 const [lostNotesDraft, setLostNotesDraft] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkEmailOpen, setBulkEmailOpen] = useState(false);
+  const [bulkSubject, setBulkSubject] = useState("");
+  const [bulkBody, setBulkBody] = useState("");
   const [newInteraction, setNewInteraction] = useState({
     date: new Date().toISOString().slice(0, 10),
     method: 'Email',
@@ -365,6 +369,40 @@ function compareValues(key: string, a: Contact, b: Contact) {
           : compareValues(sortKey, b, a)
       )
     : filtered;
+  function toggleSelect(id: number) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  function toggleSelectAll() {
+    if (sorted.length > 0 && sorted.every((c) => selectedIds.has(c.id))) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sorted.map((c) => c.id)));
+    }
+  }
+  function openBulkEmail() {
+    setBulkSubject("");
+    setBulkBody("");
+    setBulkEmailOpen(true);
+  }
+  function sendBulkEmail() {
+    const emails = contacts
+      .filter((c) => selectedIds.has(c.id) && c.email)
+      .map((c) => c.email);
+    const unique = Array.from(new Set(emails));
+    if (unique.length === 0) return;
+    const url =
+      "https://mail.google.com/mail/?view=cm&fs=1&bcc=" +
+      encodeURIComponent(unique.join(",")) +
+      "&su=" + encodeURIComponent(bulkSubject) +
+      "&body=" + encodeURIComponent(bulkBody);
+    window.open(url, "_blank");
+    setBulkEmailOpen(false);
+  }
   const boardBase = contacts.filter((c) => {
     const matchesAssigned = assignedFilter === 'all' || c.assignedTo === assignedFilter;
     const q = search.toLowerCase();
@@ -704,10 +742,37 @@ function compareValues(key: string, a: Contact, b: Contact) {
         </div>
         {viewMode === 'list' && (
         <>
+                {selectedIds.size > 0 && (
+                  <div className="flex items-center justify-between bg-pink-50 border border-pink-200 rounded-xl px-4 py-2 mb-3">
+                    <div className="text-sm font-semibold text-pink-700">{selectedIds.size} selected</div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={openBulkEmail}
+                        className="bg-pink-300 hover:bg-pink-400 text-white text-sm font-bold px-4 py-2 rounded-xl"
+                      >
+                        Email Selected
+                      </button>
+                      <button
+                        onClick={() => setSelectedIds(new Set())}
+                        className="text-sm font-medium text-gray-500 px-3 py-2"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                )}
         <div className="border border-gray-100 rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="px-4 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={sorted.length > 0 && sorted.every((c) => selectedIds.has(c.id))}
+                    onChange={toggleSelectAll}
+                    className="rounded border-gray-300"
+                  />
+                </th>
                 <th
                   onClick={() => toggleSort('role')}
                   className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
@@ -753,6 +818,14 @@ function compareValues(key: string, a: Contact, b: Contact) {
                   key={c.id}
                   className="border-b border-gray-50 hover:bg-gray-50"
                 >
+                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(c.id)}
+                    onChange={() => toggleSelect(c.id)}
+                    className="rounded border-gray-300"
+                  />
+                </td>
                   <td
                     className="px-4 py-3 font-semibold text-gray-900 cursor-pointer hover:underline"
                     onClick={() => openView(c)}
@@ -1385,6 +1458,57 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
           <button onClick={confirmLostReason} disabled={!lostReasonDraft} className="flex-1 bg-gray-900 text-white rounded-xl py-2.5 text-sm font-bold disabled:opacity-40">Confirm</button>
         </div>
       </div>
+        </div>
+      )}
+      {bulkEmailOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[65]">
+          <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden shadow-xl">
+            <div className="bg-pink-300 px-6 py-4 flex items-center justify-between">
+              <div className="text-white font-bold">
+                Email {selectedIds.size} Contact{selectedIds.size === 1 ? "" : "s"}
+              </div>
+              <button onClick={() => setBulkEmailOpen(false)} className="text-white">
+                <XIcon />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <div className="text-xs font-bold text-gray-500 mb-1">SUBJECT</div>
+                <input
+                  value={bulkSubject}
+                  onChange={(e) => setBulkSubject(e.target.value)}
+                  placeholder="e.g. Quick check-in"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900"
+                />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-500 mb-1">MESSAGE</div>
+                <textarea
+                  value={bulkBody}
+                  onChange={(e) => setBulkBody(e.target.value)}
+                  placeholder="Write your message..."
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 h-32"
+                />
+              </div>
+              <div className="text-xs text-gray-400">
+                This opens Gmail with everyone added as BCC, so contacts will not see the other recipients.
+              </div>
+            </div>
+            <div className="px-6 pb-6 flex items-center gap-3">
+              <button
+                onClick={() => setBulkEmailOpen(false)}
+                className="flex-1 border border-gray-200 rounded-xl py-2 text-sm font-semibold text-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={sendBulkEmail}
+                className="flex-1 bg-pink-300 hover:bg-pink-400 rounded-xl py-2 text-sm font-bold text-white"
+              >
+                Open in Gmail
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
