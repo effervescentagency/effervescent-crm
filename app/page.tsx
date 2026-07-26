@@ -52,7 +52,7 @@ function lastContactInfo(c: Contact) {
   const dates = (c.interactions || [])
     .map((it: Interaction) => new Date(it.date).getTime())
     .filter((t: number) => !isNaN(t));
-  if (dates.length === 0) return { text: "No contact yet", overdue: false };
+  if (dates.length === 0) return { text: "No contact yet", date: "", overdue: false };
   const days = Math.floor((Date.now() - Math.max(...dates)) / 86400000);
   let text = "";
   if (days <= 0) text = "Today";
@@ -65,14 +65,19 @@ function lastContactInfo(c: Contact) {
     const months = Math.floor(days / 30);
     text = months + (months === 1 ? " month ago" : " months ago");
   }
-  return { text, overdue: days > 7 };
+    const last = new Date(Math.max(...dates));
+  const dateStr = last.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return { text, date: dateStr, overdue: days > 7 };
 }
 function LastContactCell({ c }: { c: Contact }) {
   const info = lastContactInfo(c);
   return (
-    <span className={info.overdue ? "text-red-600 font-bold" : "text-gray-700"}>
-      {info.text}
-    </span>
+    <div className="flex flex-col leading-tight">
+      <span className={info.overdue ? "text-red-600 font-bold" : "text-gray-700"}>
+        {info.text}
+      </span>
+      {info.date && <span className="text-gray-400 text-[11px]">{info.date}</span>}
+    </div>
   );
 }
 function EyeIcon() {
