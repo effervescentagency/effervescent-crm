@@ -23,6 +23,8 @@ async function init() {
   await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS bottle_price TEXT`;
   await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS shot_price TEXT`;
   await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS address TEXT`;
+  await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS lost_reason TEXT`;
+  await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS lost_notes TEXT`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS interactions (

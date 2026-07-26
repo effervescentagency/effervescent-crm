@@ -30,6 +30,8 @@ interface Contact {
   bottlePrice: string;
   shotPrice: string;
   address: string;
+  lostReason: string;
+  lostNotes: string;
   interactions: Interaction[];
 }
 const statusColors: Record<Status, string> = {
@@ -47,6 +49,7 @@ const roleOptions: RoleType[] = [
   'Other',
 ];
 const statusOptions: Status[] = ['New Lead', 'Contacted', 'Negotiation', 'Won', 'Lost'];
+const lostReasonOptions: string[] = ['Uncontactable/ghosted', 'Not interested', 'Happy with current supplier', 'In-house', 'Venue closure', 'Management Change', 'Unhappy with service received', 'Low sales volume', 'Unsuitable for service', 'Effervescent Cancelled Contract', 'Other'];
 const methodOptions = ['Email', 'Phone Call', 'WhatsApp', 'In-Person', 'Other'];
 function lastContactInfo(c: Contact) {
   const dates = (c.interactions || [])
@@ -279,6 +282,9 @@ export default function Home() {
   });
   const [notesDraft, setNotesDraft] = useState('');
   const [wonDraft, setWonDraft] = useState({ shiftVenueDetails: "", bottlePrice: "", shotPrice: "", address: "" });
+const [lostModalId, setLostModalId] = useState<number | null>(null);
+const [lostReasonDraft, setLostReasonDraft] = useState("");
+const [lostNotesDraft, setLostNotesDraft] = useState("");
   const [newInteraction, setNewInteraction] = useState({
     date: new Date().toISOString().slice(0, 10),
     method: 'Email',
@@ -298,15 +304,32 @@ export default function Home() {
       setSortDir('asc');
     }
   }
-  function updateStatus(id: number, status: Status) {
-    setContacts(contacts.map((c) => (c.id === id ? { ...c, status } : c)));
-    fetch(`/api/contacts/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    }).catch((err) => console.error('Failed to update status', err));
+  function updateStatus(id: number, status: Status, extra?: { lostReason?: string; lostNotes?: string }) {
+  setContacts(contacts.map((c) => (c.id === id ? { ...c, status, ...extra } : c)));
+  fetch(`/api/contacts/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status, ...extra }),
+  }).catch((err) => console.error("Failed to update status", err));
+}
+function requestStatusChange(id: number, status: Status) {
+  if (status === "Lost") {
+    setLostModalId(id);
+    setLostReasonDraft("");
+    setLostNotesDraft("");
+  } else {
+    updateStatus(id, status);
   }
-  function compareValues(key: string, a: Contact, b: Contact) {
+}
+function confirmLostReason() {
+  if (lostModalId === null || !lostReasonDraft) return;
+  updateStatus(lostModalId, "Lost", { lostReason: lostReasonDraft, lostNotes: lostNotesDraft });
+  setLostModalId(null);
+}
+function cancelLostModal() {
+  setLostModalId(null);
+}
+function compareValues(key: string, a: Contact, b: Contact) {
     if (key === 'created')
       return new Date(a.created).getTime() - new Date(b.created).getTime();
     if (key === 'role') return a.company.localeCompare(b.company);
@@ -719,7 +742,7 @@ export default function Home() {
                   <td className="px-4 py-3">
                     <select
                   value={c.status}
-                  onChange={(e) => updateStatus(c.id, e.target.value as Status)}
+                  onChange={(e) => requestStatusChange(c.id, e.target.value as Status)}
                   className={
                     'px-3 py-1 rounded-full text-xs font-semibold border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-300 ' +
                     statusColors[c.status]
@@ -777,7 +800,7 @@ export default function Home() {
                 key={status}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => {
-                  if (dragContactId != null) updateStatus(dragContactId, status);
+                  if (dragContactId != null) requestStatusChange(dragContactId, status);
                   setDragContactId(null);
                 }}
                 className="bg-gray-50 rounded-xl p-3 min-h-[220px] border border-gray-100"
@@ -1089,6 +1112,15 @@ export default function Home() {
                   </button>
                 </div>
                 )}
+                {viewing.status === "Lost" && (
+                  <div className="mb-4">
+                    <div className="text-xs font-bold text-pink-400 mb-2">LOST REASON</div>
+                    <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-900">
+                      <div className="font-semibold">{viewing.lostReason || "Not specified"}</div>
+                      {viewing.lostNotes && <div className="text-xs text-gray-600 mt-1">{viewing.lostNotes}</div>}
+                    </div>
+                  </div>
+                )}
               <div>
                 <div className="text-xs font-bold text-pink-400 mb-3">
                   CONVERSATION HISTORY
@@ -1198,6 +1230,34 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {lostModalId !== null && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="text-sm font-bold text-gray-900 mb-3">Reason for Losing Deal</div>
+            <div className="text-xs text-gray-500 mb-3">Please select a reason before marking this contact as Lost.</div>
+          <select
+            value={lostReasonDraft}
+              onChange={(e) => setLostReasonDraft(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-900 mb-3"
+                >
+              <option value="">Select a reason...</option>
+          {lostReasonOptions.map((r) => (
+            <option key={r} value={r}>{r}</option>
+              ))}
+                </select>
+                <textarea
+              value={lostNotesDraft}
+          onChange={(e) => setLostNotesDraft(e.target.value)}
+            placeholder="Additional details (optional)"
+          className="w-full border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-900 h-24 mb-4"
+            />
+              <div className="flex gap-2">
+            <button onClick={cancelLostModal} className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-2.5 text-sm font-bold">Cancel</button>
+          <button onClick={confirmLostReason} disabled={!lostReasonDraft} className="flex-1 bg-gray-900 text-white rounded-xl py-2.5 text-sm font-bold disabled:opacity-40">Confirm</button>
+        </div>
+      </div>
         </div>
       )}
     </div>

@@ -22,6 +22,8 @@ export async function GET() {
       bottlePrice: c.bottle_price,
       shotPrice: c.shot_price,
       address: c.address,
+    lostReason: c.lost_reason,
+    lostNotes: c.lost_notes,
     interactions: interactions
       .filter((i: any) => i.contact_id === c.id)
       .map((i: any) => ({
