@@ -256,6 +256,39 @@ function SearchIcon() {
     </svg>
   );
 }
+const EMAIL_TEMPLATES: { id: string; name: string; subject: string; body: string }[] = [
+  {
+    id: 'checkin',
+    name: 'Friendly Check-in',
+    subject: 'Quick check-in from Effervescent',
+    body: 'Hi there,\n\nJust checking in to see how things are going and if there is anything we can help with at the moment.\n\nLooking forward to hearing from you.\n\nBest,\nEffervescent Team',
+  },
+  {
+    id: 'followup',
+    name: 'Follow-up After Meeting',
+    subject: 'Great speaking with you',
+    body: 'Hi there,\n\nThank you for taking the time to speak with us. It was great to learn more about your venue and how we might work together.\n\nPlease let us know if you have any questions in the meantime.\n\nBest,\nEffervescent Team',
+  },
+  {
+    id: 'promo',
+    name: 'Special Offer',
+    subject: 'A special offer for you from Effervescent',
+    body: 'Hi there,\n\nWe wanted to let you know about a limited-time offer available for your venue. Get in touch and we would be happy to share the details.\n\nBest,\nEffervescent Team',
+  },
+  {
+    id: 'reengage',
+    name: 'Re-engagement (Lost Leads)',
+    subject: 'Checking back in',
+    body: 'Hi there,\n\nIt has been a little while since we last spoke, and we wanted to reach out in case anything has changed on your end. We would love the opportunity to work together again.\n\nBest,\nEffervescent Team',
+  },
+  {
+    id: 'welcome',
+    name: 'Welcome / New Lead',
+    subject: 'Welcome - excited to connect',
+    body: 'Hi there,\n\nThanks for your interest in Effervescent. We are excited to connect and learn more about your venue.\n\nBest,\nEffervescent Team',
+  },
+];
+
 export default function Home() {
   const [contacts, setContacts] = useState<Contact[]>([]);
 
@@ -297,6 +330,7 @@ const [lostNotesDraft, setLostNotesDraft] = useState("");
   const [bulkEmailOpen, setBulkEmailOpen] = useState(false);
   const [bulkSubject, setBulkSubject] = useState("");
   const [bulkBody, setBulkBody] = useState("");
+  const [bulkTemplateId, setBulkTemplateId] = useState("");
   const [newInteraction, setNewInteraction] = useState({
     date: new Date().toISOString().slice(0, 10),
     method: 'Email',
@@ -388,6 +422,15 @@ function compareValues(key: string, a: Contact, b: Contact) {
     setBulkSubject("");
     setBulkBody("");
     setBulkEmailOpen(true);
+    setBulkTemplateId("");
+  }
+  function applyBulkTemplate(id: string) {
+    setBulkTemplateId(id);
+    const t = EMAIL_TEMPLATES.find((tpl) => tpl.id === id);
+    if (t) {
+      setBulkSubject(t.subject);
+      setBulkBody(t.body);
+    }
   }
   function sendBulkEmail() {
     const emails = contacts
@@ -1472,6 +1515,19 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
               </button>
             </div>
             <div className="p-6 space-y-4">
+              <div>
+                <div className="text-xs font-bold text-gray-500 mb-1">TEMPLATE</div>
+                <select
+                  value={bulkTemplateId}
+                  onChange={(e) => applyBulkTemplate(e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900"
+                >
+                  <option value="">Custom / Blank</option>
+                  {EMAIL_TEMPLATES.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
               <div>
                 <div className="text-xs font-bold text-gray-500 mb-1">SUBJECT</div>
                 <input
