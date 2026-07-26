@@ -1,30 +1,19 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-export function middleware(req: NextRequest) {
-  const auth = req.headers.get("authorization");
-  const validPassword = process.env.SITE_PASSWORD;
+export async function middleware(req: NextRequest) {
+const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  if (auth && validPassword) {
-    const parts = auth.split(" ");
-    const scheme = parts[0];
-    const encoded = parts[1];
-    if (scheme === "Basic" && encoded) {
-      const decoded = atob(encoded);
-      const idx = decoded.indexOf(":");
-      const pass = idx >= 0 ? decoded.slice(idx + 1) : "";
-      if (pass === validPassword) {
-        return NextResponse.next();
-      }
-    }
-  }
+if (!token) {
+const signInUrl = new URL("/signin", req.url);
+signInUrl.searchParams.set("callbackUrl", req.url);
+return NextResponse.redirect(signInUrl);
+}
 
-  return new NextResponse("Authentication required", {
-    status: 401,
-    headers: { "WWW-Authenticate": "Basic realm=\"Protected\"" },
-  });
+return NextResponse.next();
 }
 
 export const config = {
-  matcher: "/((?!_next/static|_next/image|favicon.ico).*)",
+matcher: ["/((?!api/auth|signin|_next/static|_next/image|favicon.ico).*)"],
 };
