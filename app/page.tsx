@@ -1020,7 +1020,7 @@ export default function Home() {
               >
                 Save Account Notes
               </button>
-                {viewing.status === "Won" && (
+                {(viewing.status === "Negotiation" || viewing.status === "Won" || viewing.status === "Lost") && (
                 <div>
                   <div className="text-xs font-bold text-pink-400 mb-2">
                     SHIFT & VENUE DETAILS
@@ -1030,36 +1030,35 @@ export default function Home() {
                     onChange={(e) => setWonDraft({ ...wonDraft, shiftVenueDetails: e.target.value })}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 h-20"
                   />
-                  <div className="grid grid-cols-3 gap-2 mt-2">
-                    <div>
-                      <div className="text-xs font-bold text-gray-500 mb-1">BOTTLE PRICE</div>
-                      <input
-                        type="text"
-                        value={wonDraft.bottlePrice}
-                        onChange={(e) => setWonDraft({ ...wonDraft, bottlePrice: e.target.value })}
-                        className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900"
-                      />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-gray-500 mb-1">SHOT PRICE</div>
-                      <input
-                        type="text"
-                        value={wonDraft.shotPrice}
-                        onChange={(e) => setWonDraft({ ...wonDraft, shotPrice: e.target.value })}
-                        className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900"
-                      />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-gray-500 mb-1">ADDRESS</div>
-                      <input
-                        type="text"
-                        value={wonDraft.address}
-                        onChange={(e) => setWonDraft({ ...wonDraft, address: e.target.value })}
-                        className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900"
-                      />
-                    </div>
-                  </div>
-                  <button
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                <div>
+                  <div className="text-xs font-bold text-gray-500 mb-1">BOTTLE PRICE</div>
+                  <input
+                    type="text"
+                    value={wonDraft.bottlePrice}
+                    onChange={(e) => setWonDraft({ ...wonDraft, bottlePrice: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900"
+                  />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-gray-500 mb-1">SHOT PRICE</div>
+                  <input
+                    type="text"
+                    value={wonDraft.shotPrice}
+                    onChange={(e) => setWonDraft({ ...wonDraft, shotPrice: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900"
+                  />
+                </div>
+              </div>
+              <div className="mt-2">
+                <div className="text-xs font-bold text-gray-500 mb-1">ADDRESS</div>
+                <textarea
+                  value={wonDraft.address}
+                  onChange={(e) => setWonDraft({ ...wonDraft, address: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900 h-20"
+                />
+              </div>
+                <button
                     onClick={saveWonDetails}
                     className="w-full bg-gray-900 text-white rounded-xl py-2.5 text-sm font-bold mt-2"
                   >
