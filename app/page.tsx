@@ -7,7 +7,18 @@ type RoleType =
   | 'Business Owner'
   | 'Staff Member'
   | 'Other';
-type AssignedTo = 'Unassigned' | 'Maddison' | 'User 1';
+const STAFF: { email: string; name: string }[] = [
+  { email: 'maddison@effervescent.agency', name: 'Maddison' },
+  { email: 'hello@effervescent.agency', name: 'Hello' },
+  { email: 'bella@effervescent.agency', name: 'Bella' },
+  { email: 'meg@effervescent.agency', name: 'Meg' },
+  ];
+  function assignedToLabel(value: string) {
+  if (!value || value === 'Unassigned') return 'Unassigned';
+  const match = STAFF.find((s) => s.email === value);
+  return match ? match.name : value;
+  }
+  type AssignedTo = string;
 interface Interaction {
   id: number;
   date: string;
@@ -52,7 +63,7 @@ const roleOptions: RoleType[] = [
   'Staff Member',
   'Other',
 ];
-const assignedToOptions: AssignedTo[] = ['Unassigned', 'Maddison', 'User 1'];
+const assignedToOptions: AssignedTo[] = ['Unassigned', ...STAFF.map((s) => s.email)];
 const statusOptions: Status[] = ['New Lead', 'Contacted', 'Negotiation', 'Won', 'Lost'];
 const lostReasonOptions: string[] = ['Uncontactable/ghosted', 'Not interested', 'Happy with current supplier', 'In-house', 'Venue closure', 'Management Change', 'Unhappy with service received', 'Low sales volume', 'Unsuitable for service', 'Effervescent Cancelled Contract', 'Other'];
 const methodOptions = ['Email', 'Phone Call', 'WhatsApp', 'In-Person', 'Other'];
@@ -298,6 +309,10 @@ export default function Home() {
       .then((data) => setContacts(data))
       .catch((err) => console.error('Failed to load contacts', err));
   }, []);
+  useEffect(() => {
+    fetch('/api/sync-emails').catch(() => {});
+    }, []);
+
   const [filter, setFilter] = useState<'All' | Status>('All');
   const [assignedFilter, setAssignedFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
@@ -777,7 +792,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
               <option value="all">All</option>
               {assignedToOptions.map((r) => (
                 <option key={r} value={r}>
-                  {r}
+                  {assignedToLabel(r)}
                 </option>
               ))}
             </select>
@@ -1138,7 +1153,7 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                 >
                   {assignedToOptions.map((a) => (
                     <option key={a} value={a}>
-                      {a}
+{assignedToLabel(a)}
                     </option>
                   ))}
                 </select>
