@@ -75,7 +75,7 @@ let messageIds: string[] = [];
 try {
 const listRes = await fetch(
 'https://gmail.googleapis.com/gmail/v1/users/me/messages?' +
-new URLSearchParams({ q: 'in:sent newer_than:2d', maxResults: '25' }),
+new URLSearchParams({ labelIds: 'SENT', maxResults: '25'}),
 { headers: { Authorization: `Bearer ${accessToken}` } }
 );
 if (!listRes.ok) {
