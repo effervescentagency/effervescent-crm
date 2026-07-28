@@ -918,7 +918,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
                     (c.assignedTo && c.assignedTo !== 'Unassigned' ? 'bg-pink-100 border-pink-400 text-pink-700' : 'bg-gray-100 border-gray-300 text-gray-500 border-dashed')
                     }
                     >
-                  
+                      {assignedToOptions.map((a) => (<option key={a} value={a}>{assignedToLabel(a)}</option>))}</select></td>                  
                   <td className="px-4 py-3">
                     <select
                   value={c.status}
