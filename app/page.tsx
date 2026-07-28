@@ -374,11 +374,11 @@ const [lostNotesDraft, setLostNotesDraft] = useState("");
   }).catch((err) => console.error("Failed to update status", err));
 }
 function updateAssignedTo(id: number, assignedTo: string) {
-  setContacts(contacts.map((c) => (c.id === id ? { ...c, assignedTo } : c)));
+  setContacts((cs) => cs.map((c) => (c.id === id ? { ...c, assignedTo } : c)));
   fetch(`/api/contacts/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ assignedTo }),
+  method: "PATCH",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ assignedTo }),
   }).catch((err) => console.error("Failed to update assignedTo", err));
 }
 function requestStatusChange(id: number, status: Status) {
@@ -520,7 +520,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
     setEditingId(null);
   }
   function submitForm() {
-    if (!form.name || !form.email || !form.company || !form.city) return;
+    if (!form.name || !form.company || !form.city) return;
     if (modalMode === 'add') {
       const createdDate = new Date().toLocaleDateString('en-GB', {
         day: '2-digit',
@@ -857,10 +857,9 @@ function compareValues(key: string, a: Contact, b: Contact) {
                 >
                   CITY {sortArrow('city')}
                 </th>
-
-                <th className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-bold text-pink-500 uppercase bg-pink-50">
                   ASSIGNED TO
-                </th>
+                  </th>
                 
                 <th
                   onClick={() => toggleSort('status')}
@@ -910,23 +909,15 @@ function compareValues(key: string, a: Contact, b: Contact) {
                     <div className="text-xs text-gray-500">{c.role}</div>
                   </td>
                   <td className="px-4 py-3 text-gray-700 text-xs">{c.city}</td>
-
                   <td className="px-4 py-3">
                     <select
-                      value={c.assignedTo || 'Unassigned'}
-                      onChange={(e) => updateAssignedTo(c.id, e.target.value)}
-                      className={
-                        'px-3 py-1 rounded-full text-xs font-semibold border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-300 ' +
-                        (c.assignedTo && c.assignedTo !== 'Unassigned' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500')
-                      }
+                    value={c.assignedTo || 'Unassigned'}
+                    onChange={(e) => updateAssignedTo(c.id, e.target.value)}
+                    className={
+                    'px-3 py-1.5 rounded-full text-xs font-bold border-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-400 ' +
+                    (c.assignedTo && c.assignedTo !== 'Unassigned' ? 'bg-pink-100 border-pink-400 text-pink-700' : 'bg-gray-100 border-gray-300 text-gray-500 border-dashed')
+                    }
                     >
-                      {assignedToOptions.map((a) => (
-                        <option key={a} value={a}>
-                          {assignedToLabel(a)}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
                   
                   <td className="px-4 py-3">
                     <select
