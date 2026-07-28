@@ -9,7 +9,7 @@ type RoleType =
   | 'Other';
 const STAFF: { email: string; name: string }[] = [
   { email: 'maddison@effervescent.agency', name: 'Maddison' },
-  { email: 'hello@effervescent.agency', name: 'Hello' },
+  { email: 'hello@effervescent.agency', name: 'Sasha' },
   { email: 'bella@effervescent.agency', name: 'Bella' },
   { email: 'meg@effervescent.agency', name: 'Meg' },
   ];
@@ -372,6 +372,14 @@ const [lostNotesDraft, setLostNotesDraft] = useState("");
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status, ...extra }),
   }).catch((err) => console.error("Failed to update status", err));
+}
+function updateAssignedTo(id: number, assignedTo: string) {
+  setContacts(contacts.map((c) => (c.id === id ? { ...c, assignedTo } : c)));
+  fetch(`/api/contacts/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ assignedTo }),
+  }).catch((err) => console.error("Failed to update assignedTo", err));
 }
 function requestStatusChange(id: number, status: Status) {
   if (status === "Lost") {
@@ -849,6 +857,10 @@ function compareValues(key: string, a: Contact, b: Contact) {
                 >
                   CITY {sortArrow('city')}
                 </th>
+
+                <th className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase">
+                  ASSIGNED TO
+                </th>
                 
                 <th
                   onClick={() => toggleSort('status')}
@@ -898,6 +910,23 @@ function compareValues(key: string, a: Contact, b: Contact) {
                     <div className="text-xs text-gray-500">{c.role}</div>
                   </td>
                   <td className="px-4 py-3 text-gray-700 text-xs">{c.city}</td>
+
+                  <td className="px-4 py-3">
+                    <select
+                      value={c.assignedTo || 'Unassigned'}
+                      onChange={(e) => updateAssignedTo(c.id, e.target.value)}
+                      className={
+                        'px-3 py-1 rounded-full text-xs font-semibold border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-300 ' +
+                        (c.assignedTo && c.assignedTo !== 'Unassigned' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500')
+                      }
+                    >
+                      {assignedToOptions.map((a) => (
+                        <option key={a} value={a}>
+                          {assignedToLabel(a)}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
                   
                   <td className="px-4 py-3">
                     <select
