@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { signOut } from 'next-auth/react';
 type Status = 'New Lead' | 'Contacted' | 'Negotiation' | 'Won' | 'Lost';
 type RoleType =
     | 'Manager'
@@ -745,6 +746,12 @@ export default function Home() {
                             Clients and Partners CRM
                         </div>
                     </div>
+                    <button
+                        onClick={() => signOut({ callbackUrl: '/' })}
+                        className="ml-auto flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-pink-600"
+                    >
+                        Sign Out
+                    </button>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="relative flex-1">
