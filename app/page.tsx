@@ -7,7 +7,8 @@ type RoleType =
   | 'Business Owner'
   | 'Staff Member'
   | 'Other';
-const STAFF: { email: string; name: string }[] = [
+
+   STAFF: { email: string; name: string }[] = [
   { email: 'maddison@effervescent.agency', name: 'Maddison' },
   { email: 'hello@effervescent.agency', name: 'Sasha' },
   { email: 'bella@effervescent.agency', name: 'Bella' },
@@ -358,6 +359,7 @@ const [lostNotesDraft, setLostNotesDraft] = useState("");
     contactedBy: '',
     notes: '',
   });
+  const [showLogModal, setShowLogModal] = useState(false);
   function counts(s: 'All' | Status) {
     return s === 'All'
       ? contacts.length
@@ -659,6 +661,7 @@ function logInteraction() {
       contactedBy: '',
       notes: '',
     });
+    setShowLogModal(false);
   }
   function sortArrow(key: string) {
     if (sortKey !== key) return '\u25BE';
@@ -1315,8 +1318,14 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end">
-                <button
+              <div className="flex justify-end gap-2">
+      <button
+      onClick={() => setShowLogModal(true)}
+      className="flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
+      >
+      <MailIcon /> Log Communication
+      </button>
+                    <button
                   onClick={() => openEdit(viewing)}
                   className="flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
                 >
@@ -1405,10 +1414,17 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                 <div className="text-xs font-bold text-pink-400 mb-3">
                   CONVERSATION HISTORY
                 </div>
-                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                  <div className="text-sm font-semibold text-gray-900">
-                    Log New Communication
-                  </div>
+{showLogModal && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
+  <div className="bg-white rounded-xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+  <div className="bg-pink-300 px-6 py-4 flex items-center justify-between rounded-t-xl">
+  <div className="text-white font-bold">Log New Communication</div>
+  <button onClick={() => setShowLogModal(false)} className="text-white">
+  <XIcon />
+  </button>
+  </div>
+  <div className="p-4 space-y-3">
+
                   <div className="grid grid-cols-3 gap-2">
                     <div>
                       <div className="text-xs font-bold text-gray-500 mb-1">
@@ -1487,6 +1503,10 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                     Log Interaction
                   </button>
                 </div>
+                </div>
+                </div>
+                )}
+                
                 <div className="space-y-3 mt-4">
                   {viewing.interactions.map((i) => (
                     <div key={i.id} className="border-t border-gray-100 pt-3">
