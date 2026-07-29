@@ -67,6 +67,12 @@ const assignedToOptions: AssignedTo[] = ['Unassigned', ...STAFF.map((s) => s.ema
 const statusOptions: Status[] = ['New Lead', 'Contacted', 'Negotiation', 'Won', 'Lost'];
 const lostReasonOptions: string[] = ['Uncontactable/ghosted', 'Not interested', 'Happy with current supplier', 'In-house', 'Venue closure', 'Management Change', 'Unhappy with service received', 'Low sales volume', 'Unsuitable for service', 'Effervescent Cancelled Contract', 'Other'];
 const methodOptions = ['Email', 'Phone Call', 'WhatsApp', 'In-Person', 'Other'];
+function formatDate(dateStr?: string | null): string {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
 function lastContactInfo(c: Contact) {
   const dates = (c.interactions || [])
     .map((it: Interaction) => new Date(it.date).getTime())
@@ -608,30 +614,19 @@ function compareValues(key: string, a: Contact, b: Contact) {
       notes: '',
     });
   }
-  function saveNotes() {
-    if (viewingId === null) return;
-    setContacts(contacts.map((c) =>
-      c.id === viewingId ? { ...c, notes: notesDraft } : c
-    )
-    );
-    fetch(`/api/contacts/${viewingId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ notes: notesDraft }),
-    }).catch((err) => console.error('Failed to save notes', err));
-  }
-  function saveWonDetails() {
-    if (viewingId === null) return;
-    setContacts(contacts.map((c) =>
-      c.id === viewingId ? { ...c, ...wonDraft } : c
-    ));
-    fetch(`/api/contacts/${viewingId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(wonDraft),
-    }).catch((err) => console.error('Failed to save venue details', err));
-  }
-  function logInteraction() {
+function saveProfile() {
+  if (viewingId === null) return;
+  const updates = { notes: notesDraft, ...wonDraft };
+  setContacts(contacts.map((c) =>
+  c.id === viewingId ? { ...c, ...updates } : c
+  ));
+  fetch(`/api/contacts/${viewingId}`, {
+  method: 'PATCH',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(updates),
+  }).catch((err) => console.error('Failed to save profile', err));
+}
+function logInteraction() {
     if (viewingId === null || !newInteraction.notes) return;
     const interaction: Interaction = {
       id: Date.now(),
@@ -939,7 +934,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
                     <LastContactCell c={c} />
                   </td>
                   <td className="px-4 py-3 text-gray-700 text-xs">
-                    {c.created}
+                    {formatDate(c.created)}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -1015,7 +1010,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
       </div>
       {modalMode && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[55]">
-          <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden shadow-xl">
+          <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden shadow-xl max-h-[90vh] flex flex-col">
             <div className="bg-pink-300 px-6 py-4 flex items-center justify-between">
               <div className="text-white font-bold">
                 {modalMode === 'add'
@@ -1026,7 +1021,7 @@ function compareValues(key: string, a: Contact, b: Contact) {
                 <XIcon />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
               <div>
                 <div className="text-xs font-bold text-gray-500 mb-1">
                   COMPANY NAME *
@@ -1288,7 +1283,7 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                     <CalendarIcon /> ADDED DATE
                   </div>
                   <div className="text-sm text-gray-900 mt-1">
-                    {viewing.created}
+                    {formatDate(viewing.created)}
                   </div>
                 </div>
                 <div>
@@ -1338,13 +1333,7 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 h-20"
                 />
               </div>
-              <button
-                onClick={saveNotes}
-                className="w-full bg-gray-900 text-white rounded-xl py-2.5 text-sm font-bold"
-              >
-                Save Account Notes
-              </button>
-                {(viewing.status === "Negotiation" || viewing.status === "Won" || viewing.status === "Lost") && (
+{(viewing.status === "Negotiation" || viewing.status === "Won" || viewing.status === "Lost") && (
                 <div>
                   <div className="text-xs font-bold text-pink-400 mb-2">
                     SHIFT & VENUE DETAILS
@@ -1375,19 +1364,26 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                 </div>
               </div>
               <div className="mt-2">
-                <div className="text-xs font-bold text-gray-500 mb-1">ADDRESS</div>
+<div className="text-xs font-bold text-gray-500 mb-1 flex items-center justify-between">
+  <span>ADDRESS</span>
+  {wonDraft.address && (
+  <a
+  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(wonDraft.address)}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-pink-500 font-normal normal-case underline"
+  >
+  Open in Maps
+  </a>
+  )}
+  </div>
+
                 <textarea
                   value={wonDraft.address}
                   onChange={(e) => setWonDraft({ ...wonDraft, address: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-900 h-20"
                 />
               </div>
-                <button
-                    onClick={saveWonDetails}
-                    className="w-full bg-gray-900 text-white rounded-xl py-2.5 text-sm font-bold mt-2"
-                  >
-                    Save Venue Details
-                  </button>
                 </div>
                 )}
                 {viewing.status === "Lost" && (
@@ -1399,6 +1395,12 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                     </div>
                   </div>
                 )}
+              <button
+              onClick={saveProfile}
+              className="w-full bg-gray-900 text-white rounded-xl py-2.5 text-sm font-bold"
+              >
+              Save Changes
+              </button>
               <div>
                 <div className="text-xs font-bold text-pink-400 mb-3">
                   CONVERSATION HISTORY
