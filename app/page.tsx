@@ -8,7 +8,7 @@ type RoleType =
   | 'Staff Member'
   | 'Other';
 
-   STAFF: { email: string; name: string }[] = [
+const    STAFF: { email: string; name: string }[] = [
   { email: 'maddison@effervescent.agency', name: 'Maddison' },
   { email: 'hello@effervescent.agency', name: 'Sasha' },
   { email: 'bella@effervescent.agency', name: 'Bella' },
@@ -1506,7 +1506,7 @@ onChange={(e) => setForm({ ...form, name: e.target.value })}
                 </div>
                 </div>
                 )}
-                
+
                 <div className="space-y-3 mt-4">
                   {viewing.interactions.map((i) => (
                     <div key={i.id} className="border-t border-gray-100 pt-3">
