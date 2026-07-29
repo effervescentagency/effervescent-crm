@@ -22,7 +22,7 @@ throw new Error('Failed to refresh Gmail token: ' + (await res.text()));
 return res.json() as Promise<{ access_token: string; expires_in: number }>;
 }
 
-async function getValidAccessToken(row: any): Promise<string | null> {
+export async function getValidAccessToken(row: any): Promise<string | null> {
 const now = Math.floor(Date.now() / 1000);
 if (row.access_token && row.expiry_date && Number(row.expiry_date) - 60 > now) {
 return row.access_token;
