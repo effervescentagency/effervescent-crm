@@ -65,6 +65,20 @@ value TEXT
 )
 `;
 
+await sql`
+CREATE TABLE IF NOT EXISTS follow_ups (
+id SERIAL PRIMARY KEY,
+contact_id INTEGER REFERENCES contacts(id) ON DELETE CASCADE,
+note TEXT,
+due_date TEXT,
+assigned_to TEXT,
+done BOOLEAN DEFAULT false,
+reminder_sent BOOLEAN DEFAULT false,
+calendar_event_id TEXT,
+created_at TIMESTAMP DEFAULT now()
+)
+`;
+
 await sql`UPDATE contacts SET assigned_to = 'maddison@effervescent.agency' WHERE assigned_to = 'Maddison'`;
 await sql`UPDATE contacts SET assigned_to = 'Unassigned' WHERE assigned_to = 'User 1'`;
 

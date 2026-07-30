@@ -6,6 +6,7 @@ export async function GET() {
   await ensureSchema();
   const contacts = await sql`SELECT * FROM contacts ORDER BY id`;
   const interactions = await sql`SELECT * FROM interactions ORDER BY id DESC`;
+  const followUps = await sql`SELECT * FROM follow_ups WHERE done = false ORDER BY due_date ASC`;
   const result = contacts.map((c: any) => ({
     id: c.id,
     name: c.name,
@@ -35,6 +36,15 @@ export async function GET() {
         method: i.method,
         contactedBy: i.contacted_by,
         notes: i.notes,
+      })),
+      followUps: followUps
+      .filter((f: any) => f.contact_id === c.id)
+      .map((f: any) => ({
+      id: f.id,
+      note: f.note,
+      dueDate: f.due_date,
+      assignedTo: f.assigned_to,
+      done: f.done,
       })),
   }));
   return NextResponse.json(result);
