@@ -3,11 +3,12 @@ import { useState, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
 type Status = 'New Lead' | 'Contacted' | 'Negotiation' | 'Won' | 'Lost';
 type RoleType =
-    | 'Manager'
-    | 'Partner'
-    | 'Business Owner'
-    | 'Staff Member'
-    | 'Other';
+| 'Owner'
+| 'General Manager'
+| 'Bar Manager'
+| 'Assistant Manager'
+| 'Marketing'
+| 'Operations Manager';
 
 const STAFF: { email: string; name: string }[] = [
     { email: 'maddison@effervescent.agency', name: 'Maddison' },
@@ -67,11 +68,12 @@ const statusColors: Record<Status, string> = {
     Lost: 'bg-gray-100 text-gray-600',
 };
 const roleOptions: RoleType[] = [
-    'Manager',
-    'Partner',
-    'Business Owner',
-    'Staff Member',
-    'Other',
+'Owner',
+    'General Manager',
+    'Bar Manager',
+    'Assistant Manager',
+    'Marketing',
+    'Operations Manager',
 ];
 const assignedToOptions: AssignedTo[] = ['Unassigned', ...STAFF.map((s) => s.email)];
 const statusOptions: Status[] = ['New Lead', 'Contacted', 'Negotiation', 'Won', 'Lost'];
@@ -347,7 +349,7 @@ export default function Home() {
         city: '',
         website: '',
         instagram: '',
-        role: 'Manager' as RoleType,
+        role: 'Owner' as RoleType,
         assignedTo: 'Unassigned' as AssignedTo,
         status: 'New Lead' as Status,
         notes: '',
@@ -658,7 +660,7 @@ export default function Home() {
             city: '',
             website: '',
             instagram: '',
-            role: 'Manager',
+            role: 'Owner',
             assignedTo: 'Unassigned',
             status: 'New Lead',
             notes: '',
@@ -1373,7 +1375,7 @@ export default function Home() {
             )}
             {viewing && (
                 <div className="fixed inset-0 bg-black/40 flex justify-end z-40">
-                    <div className="bg-white w-full max-w-md h-full overflow-y-auto shadow-xl">
+                    <div className="bg-white w-full max-w-2xl h-full overflow-y-auto shadow-xl">
                         <div className="bg-pink-300 px-6 py-5 flex items-start justify-between">
                             <div>
                                 <div className="text-white font-bold text-lg">
@@ -1484,28 +1486,28 @@ export default function Home() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex justify-end gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                                 <button
                                     onClick={() => setShowLogModal(true)}
-                                    className="flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
+                                    className="flex items-center justify-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
                                 >
                                     <MailIcon /> Log Communication
                                 </button>
                                 <button
                                     onClick={() => openEdit(viewing)}
-                                    className="flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
+                                    className="flex items-center justify-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
                                 >
                                     <PencilIcon /> Edit Profile
                                 </button>
                                 <button
                                     onClick={() => openMeetingModal(viewing)}
-                                    className="flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
+                                    className="flex items-center justify-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
                                 >
                                     <CalendarIcon /> Schedule Meeting
                                 </button>
                                 <button
                                 onClick={openFollowUpModal}
-                                className="flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
+                                className="flex items-center justify-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
                                 >
                                 <CalendarIcon /> Follow-Up Reminder
                                 </button>
@@ -1709,17 +1711,16 @@ export default function Home() {
                                                         <div className="text-xs font-bold text-gray-500 mb-1">
                                                             CONTACTED BY
                                                         </div>
-                                                        <input
-                                                            value={newInteraction.contactedBy}
-                                                            onChange={(e) =>
-                                                                setNewInteraction({
-                                                                    ...newInteraction,
-                                                                    contactedBy: e.target.value,
-                                                                })
-                                                            }
-                                                            placeholder="Staff"
-                                                            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
-                                                        />
+<select
+    value={newInteraction.contactedBy}
+    onChange={(e) => {
+        setNewInteraction({
+            ...newInteraction,
+            contactedBy: e.target.value,
+        });
+    }}
+className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
+    ><option value="">Select staff...</option>{STAFF.map((s) => (<option key={s.email} value={s.name}>{s.name}</option>))}</select>
                                                     </div>
                                                 </div>
                                                 <div>
