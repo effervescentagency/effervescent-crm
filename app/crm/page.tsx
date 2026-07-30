@@ -68,7 +68,7 @@ const roleOptions: RoleType[] = [
 const assignedToOptions: AssignedTo[] = ['Unassigned', ...STAFF.map((s) => s.email)];
 const statusOptions: Status[] = ['New Lead', 'Contacted', 'Negotiation', 'Won', 'Lost'];
 const lostReasonOptions: string[] = ['Uncontactable/ghosted', 'Not interested', 'Happy with current supplier', 'In-house', 'Venue closure', 'Management Change', 'Unhappy with service received', 'Low sales volume', 'Unsuitable for service', 'Effervescent Cancelled Contract', 'Other'];
-const methodOptions = ['Email', 'Phone Call', 'WhatsApp', 'In-Person', 'Other'];
+const methodOptions = ['Email', 'Phone Call', 'WhatsApp', 'LinkedIn', 'In-Person', 'Other'];
 function formatDate(dateStr?: string | null): string {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
@@ -422,6 +422,28 @@ export default function Home() {
             }
             setMeetingResult(data);
             setMeetingStatus('success');
+            const meetingNotesParts = [`${meetingForm.title} on ${meetingForm.date} at ${meetingForm.time} (${meetingForm.duration} min).`];
+            if (data.meetLink) meetingNotesParts.push(`Join link: ${data.meetLink}`);
+            if (data.htmlLink) meetingNotesParts.push(`Calendar event: ${data.htmlLink}`);
+            if (meetingForm.description) meetingNotesParts.push(meetingForm.description);
+            const meetingInteraction = {
+            date: meetingForm.date,
+            method: 'Meeting Booked',
+            contactedBy: '',
+            notes: meetingNotesParts.join(' '),
+            };
+            setContacts((cs) =>
+            cs.map((c) =>
+            c.id === viewing.id
+            ? { ...c, interactions: [{ id: Date.now(), ...meetingInteraction }, ...c.interactions] }
+            : c
+            )
+            );
+            fetch(`/api/contacts/${viewing.id}/interactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(meetingInteraction),
+            }).catch((err) => console.error('Failed to log meeting interaction', err));
         } catch (err) {
             setMeetingStatus('error');
             setMeetingError('Failed to schedule meeting.');
