@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
+import { LOGO_SRC } from '@/lib/logo';
 type Status = 'New Lead' | 'Contacted' | 'Negotiation' | 'Won' | 'Lost';
 type RoleType =
 | 'Owner'
@@ -831,18 +832,18 @@ export default function Home() {
     return (
         <div className="min-h-screen bg-white">
             <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
-                <a href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-pink-500 hover:text-pink-600">Back to Dashboard</a>
+                <a href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-brand-500 hover:text-brand-600">Back to Dashboard</a>
                 <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
-                    <div className="w-10 h-10 rounded-xl bg-pink-200 border border-pink-300 shadow-sm" />
+                    <div className="w-10 h-10 rounded-xl bg-brand-200 border border-brand-300 shadow-sm flex items-center justify-center overflow-hidden"><img src={LOGO_SRC} alt="Effervescent logo" className="w-6 h-6 object-contain" /></div>
                     <div>
-                        <div className="text-sm font-bold text-pink-400">Your Agency</div>
+                        <div className="text-sm font-bold text-brand-400">Your Agency</div>
                         <div className="text-xs text-gray-900">
                             Clients and Partners CRM
                         </div>
                     </div>
                     <button
                         onClick={() => signOut({ callbackUrl: '/' })}
-                        className="ml-auto flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-pink-600"
+                        className="ml-auto flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-brand-600"
                     >
                         Sign Out
                     </button>
@@ -856,12 +857,12 @@ export default function Home() {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search CRM by name, company, email, phone, city..."
-                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-200"
                         />
                     </div>
                     <button
                         onClick={openAdd}
-                        className="flex items-center gap-2 bg-pink-300 hover:bg-pink-400 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-sm"
+                        className="flex items-center gap-2 bg-brand-300 hover:bg-brand-400 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-sm"
                     >
                         <PlusIcon /> Add CRM Contact
                     </button>
@@ -894,7 +895,7 @@ export default function Home() {
                             className={
                                 'px-4 py-2 rounded-full text-sm font-medium border ' +
                                 (filter === 'All'
-                                    ? 'bg-pink-300 text-white border-pink-300'
+                                    ? 'bg-brand-300 text-white border-brand-300'
                                     : 'bg-white text-gray-700 border-gray-200')
                             }
                         >
@@ -905,7 +906,7 @@ export default function Home() {
                             className={
                                 'px-4 py-2 rounded-full text-sm font-medium border ' +
                                 (filter === 'New Lead'
-                                    ? 'bg-pink-300 text-white border-pink-300'
+                                    ? 'bg-brand-300 text-white border-brand-300'
                                     : 'bg-white text-gray-700 border-gray-200')
                             }
                         >
@@ -916,7 +917,7 @@ export default function Home() {
                             className={
                                 'px-4 py-2 rounded-full text-sm font-medium border ' +
                                 (filter === 'Contacted'
-                                    ? 'bg-pink-300 text-white border-pink-300'
+                                    ? 'bg-brand-300 text-white border-brand-300'
                                     : 'bg-white text-gray-700 border-gray-200')
                             }
                         >
@@ -927,7 +928,7 @@ export default function Home() {
                             className={
                                 'px-4 py-2 rounded-full text-sm font-medium border ' +
                                 (filter === 'Negotiation'
-                                    ? 'bg-pink-300 text-white border-pink-300'
+                                    ? 'bg-brand-300 text-white border-brand-300'
                                     : 'bg-white text-gray-700 border-gray-200')
                             }
                         >
@@ -938,7 +939,7 @@ export default function Home() {
                             className={
                                 'px-4 py-2 rounded-full text-sm font-medium border ' +
                                 (filter === 'Won'
-                                    ? 'bg-pink-300 text-white border-pink-300'
+                                    ? 'bg-brand-300 text-white border-brand-300'
                                     : 'bg-white text-gray-700 border-gray-200')
                             }
                         >
@@ -949,7 +950,7 @@ export default function Home() {
                             className={
                                 'px-4 py-2 rounded-full text-sm font-medium border ' +
                                 (filter === 'Lost'
-                                    ? 'bg-pink-300 text-white border-pink-300'
+                                    ? 'bg-brand-300 text-white border-brand-300'
                                     : 'bg-white text-gray-700 border-gray-200')
                             }
                         >
@@ -975,12 +976,12 @@ export default function Home() {
                 {viewMode === 'list' && (
                     <>
                         {selectedIds.size > 0 && (
-                            <div className="flex items-center justify-between bg-pink-50 border border-pink-200 rounded-xl px-4 py-2 mb-3">
-                                <div className="text-sm font-semibold text-pink-700">{selectedIds.size} selected</div>
+                            <div className="flex items-center justify-between bg-brand-50 border border-brand-200 rounded-xl px-4 py-2 mb-3">
+                                <div className="text-sm font-semibold text-brand-700">{selectedIds.size} selected</div>
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={openBulkEmail}
-                                        className="bg-pink-300 hover:bg-pink-400 text-white text-sm font-bold px-4 py-2 rounded-xl"
+                                        className="bg-brand-300 hover:bg-brand-400 text-white text-sm font-bold px-4 py-2 rounded-xl"
                                     >
                                         Email Selected
                                     </button>
@@ -1007,42 +1008,42 @@ export default function Home() {
                                         </th>
                                         <th
                                             onClick={() => toggleSort('role')}
-                                            className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
+                                            className="px-4 py-3 text-left text-xs font-bold text-brand-400 uppercase cursor-pointer select-none"
                                         >
                                             COMPANY {sortArrow('role')}
                                         </th>
                                         <th
                                             onClick={() => toggleSort('name')}
-                                            className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
+                                            className="px-4 py-3 text-left text-xs font-bold text-brand-400 uppercase cursor-pointer select-none"
                                         >
                                             NAME &amp; ROLE {sortArrow('name')}
                                         </th>
                                         <th
                                             onClick={() => toggleSort('city')}
-                                            className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
+                                            className="px-4 py-3 text-left text-xs font-bold text-brand-400 uppercase cursor-pointer select-none"
                                         >
                                             CITY {sortArrow('city')}
                                         </th>
-                                        <th className="px-4 py-3 text-left text-xs font-bold text-pink-500 uppercase bg-pink-50">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-brand-500 uppercase bg-brand-50">
                                             ASSIGNED TO
                                         </th>
 
                                         <th
                                             onClick={() => toggleSort('status')}
-                                            className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
+                                            className="px-4 py-3 text-left text-xs font-bold text-brand-400 uppercase cursor-pointer select-none"
                                         >
                                             STATUS {sortArrow('status')}
                                         </th>
-                                        <th className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-brand-400 uppercase">
                                             LAST CONTACT
                                         </th>
                                         <th
                                             onClick={() => toggleSort('created')}
-                                            className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase cursor-pointer select-none"
+                                            className="px-4 py-3 text-left text-xs font-bold text-brand-400 uppercase cursor-pointer select-none"
                                         >
                                             CREATED {sortArrow('created')}
                                         </th>
-                                        <th className="px-4 py-3 text-left text-xs font-bold text-pink-400 uppercase">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-brand-400 uppercase">
                                             ACTIONS
                                         </th>
                                     </tr>
@@ -1080,8 +1081,8 @@ export default function Home() {
                                                     value={c.assignedTo || 'Unassigned'}
                                                     onChange={(e) => updateAssignedTo(c.id, e.target.value)}
                                                     className={
-                                                        'px-3 py-1.5 rounded-full text-xs font-bold border-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-400 ' +
-                                                        (c.assignedTo && c.assignedTo !== 'Unassigned' ? 'bg-pink-100 border-pink-400 text-pink-700' : 'bg-gray-100 border-gray-300 text-gray-500 border-dashed')
+                                                        'px-3 py-1.5 rounded-full text-xs font-bold border-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-400 ' +
+                                                        (c.assignedTo && c.assignedTo !== 'Unassigned' ? 'bg-brand-100 border-brand-400 text-brand-700' : 'bg-gray-100 border-gray-300 text-gray-500 border-dashed')
                                                     }
                                                 >
                                                     {assignedToOptions.map((a) => (<option key={a} value={a}>{assignedToLabel(a)}</option>))}</select></td>
@@ -1090,7 +1091,7 @@ export default function Home() {
                                                     value={c.status}
                                                     onChange={(e) => requestStatusChange(c.id, e.target.value as Status)}
                                                     className={
-                                                        'px-3 py-1 rounded-full text-xs font-semibold border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-300 ' +
+                                                        'px-3 py-1 rounded-full text-xs font-semibold border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-300 ' +
                                                         statusColors[c.status]
                                                     }
                                                 >
@@ -1182,7 +1183,7 @@ export default function Home() {
             {modalMode && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[55]">
                     <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden shadow-xl max-h-[90vh] flex flex-col">
-                        <div className="bg-pink-300 px-6 py-4 flex items-center justify-between">
+                        <div className="bg-brand-300 px-6 py-4 flex items-center justify-between">
                             <div className="text-white font-bold">
                                 {modalMode === 'add'
                                     ? 'Add New CRM Contact'
@@ -1365,7 +1366,7 @@ export default function Home() {
                             </button>
                             <button
                                 onClick={submitForm}
-                                className="flex-1 bg-pink-300 hover:bg-pink-400 rounded-xl py-2 text-sm font-bold text-white"
+                                className="flex-1 bg-brand-300 hover:bg-brand-400 rounded-xl py-2 text-sm font-bold text-white"
                             >
                                 {modalMode === 'add' ? 'Add Contact' : 'Update Contact'}
                             </button>
@@ -1376,7 +1377,7 @@ export default function Home() {
             {viewing && (
                 <div className="fixed inset-0 bg-black/40 flex justify-end z-40">
                     <div className="bg-white w-full max-w-2xl h-full overflow-y-auto shadow-xl">
-                        <div className="bg-pink-300 px-6 py-5 flex items-start justify-between">
+                        <div className="bg-brand-300 px-6 py-5 flex items-start justify-between">
                             <div>
                                 <div className="text-white font-bold text-lg">
                                     {viewing.company}
@@ -1513,7 +1514,7 @@ export default function Home() {
                                 </button>
                             </div>
                             <div>
-                                <div className="text-xs font-bold text-pink-400 mb-2">
+                                <div className="text-xs font-bold text-brand-400 mb-2">
                                     GENERAL ACCOUNT NOTES
                                 </div>
                                 <textarea
@@ -1524,7 +1525,7 @@ export default function Home() {
                             </div>
                             {(viewing.status === "Negotiation" || viewing.status === "Won" || viewing.status === "Lost") && (
                                 <div>
-                                    <div className="text-xs font-bold text-pink-400 mb-2">
+                                    <div className="text-xs font-bold text-brand-400 mb-2">
                                         SHIFT & VENUE DETAILS
                                     </div>
                                     <textarea
@@ -1560,7 +1561,7 @@ export default function Home() {
                                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(wonDraft.address)}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="text-pink-500 font-normal normal-case underline"
+                                                    className="text-brand-500 font-normal normal-case underline"
                                                 >
                                                     Open in Maps
                                                 </a>
@@ -1577,7 +1578,7 @@ export default function Home() {
                             )}
                             {viewing.status === "Lost" && (
                                 <div className="mb-4">
-                                    <div className="text-xs font-bold text-pink-400 mb-2">LOST REASON</div>
+                                    <div className="text-xs font-bold text-brand-400 mb-2">LOST REASON</div>
                                     <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-900">
                                         <div className="font-semibold">{viewing.lostReason || "Not specified"}</div>
                                         {viewing.lostNotes && <div className="text-xs text-gray-600 mt-1">{viewing.lostNotes}</div>}
@@ -1591,12 +1592,12 @@ export default function Home() {
                                 Save Changes
                             </button>
                             <div>
-                                <div className="text-xs font-bold text-pink-400 mb-3">
+                                <div className="text-xs font-bold text-brand-400 mb-3">
                                     CONVERSATION HISTORY
                                 </div>
                                 {viewing.followUps.length > 0 && (
                                 <div className="space-y-2 mb-4">
-                                <div className="text-xs font-bold text-pink-400 mb-1">OPEN FOLLOW-UPS</div>
+                                <div className="text-xs font-bold text-brand-400 mb-1">OPEN FOLLOW-UPS</div>
                                 {viewing.followUps.map((f) => (
                                 <div key={f.id} className="flex items-start gap-2 bg-gray-50 rounded-xl p-3">
                                 <input
@@ -1616,7 +1617,7 @@ export default function Home() {
                                 {showFollowUpModal && (
                                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
                                 <div className="bg-white rounded-xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
-                                <div className="bg-pink-300 px-6 py-4 flex items-center justify-between rounded-t-xl">
+                                <div className="bg-brand-300 px-6 py-4 flex items-center justify-between rounded-t-xl">
                                 <div className="text-white font-bold">Follow-Up Reminder</div>
                                 <button onClick={() => setShowFollowUpModal(false)} className="text-white">
                                 <XIcon />
@@ -1650,7 +1651,7 @@ export default function Home() {
                                 <button
                                 onClick={submitFollowUp}
                                 disabled={followUpStatus === 'saving'}
-                                className="w-full bg-pink-300 hover:bg-pink-400 text-white rounded-xl py-2 text-sm font-bold disabled:opacity-40"
+                                className="w-full bg-brand-300 hover:bg-brand-400 text-white rounded-xl py-2 text-sm font-bold disabled:opacity-40"
                                 >
                                 {followUpStatus === 'saving' ? 'Saving...' : 'Save Follow-Up'}
                                 </button>
@@ -1661,7 +1662,7 @@ export default function Home() {
                                 {showLogModal && (
                                     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
                                         <div className="bg-white rounded-xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
-                                            <div className="bg-pink-300 px-6 py-4 flex items-center justify-between rounded-t-xl">
+                                            <div className="bg-brand-300 px-6 py-4 flex items-center justify-between rounded-t-xl">
                                                 <div className="text-white font-bold">Log New Communication</div>
                                                 <button onClick={() => setShowLogModal(false)} className="text-white">
                                                     <XIcon />
@@ -1741,7 +1742,7 @@ className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
                                                 </div>
                                                 <button
                                                     onClick={logInteraction}
-                                                    className="w-full bg-pink-300 hover:bg-pink-400 text-white rounded-xl py-2 text-sm font-bold"
+                                                    className="w-full bg-brand-300 hover:bg-brand-400 text-white rounded-xl py-2 text-sm font-bold"
                                                 >
                                                     Log Interaction
                                                 </button>
@@ -1752,7 +1753,7 @@ className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
                                 {showMeetingModal && (
                                     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
                                         <div className="bg-white rounded-xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
-                                            <div className="bg-pink-300 px-6 py-4 flex items-center justify-between rounded-t-xl">
+                                            <div className="bg-brand-300 px-6 py-4 flex items-center justify-between rounded-t-xl">
                                                 <div className="text-white font-bold">Schedule Meeting</div>
                                                 <button onClick={() => setShowMeetingModal(false)} className="text-white">
                                                     <XIcon />
@@ -1763,12 +1764,12 @@ className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
                                                     <div className="space-y-3">
                                                         <div className="text-sm text-gray-700">Meeting scheduled successfully.</div>
                                                         {meetingResult?.htmlLink && (
-                                                            <a href={meetingResult.htmlLink} target="_blank" rel="noopener noreferrer" className="block text-sm font-semibold text-pink-500 hover:text-pink-600">
+                                                            <a href={meetingResult.htmlLink} target="_blank" rel="noopener noreferrer" className="block text-sm font-semibold text-brand-500 hover:text-brand-600">
                                                                 View in Google Calendar
                                                             </a>
                                                         )}
                                                         {meetingResult?.meetLink && (
-                                                            <a href={meetingResult.meetLink} target="_blank" rel="noopener noreferrer" className="block text-sm font-semibold text-pink-500 hover:text-pink-600">
+                                                            <a href={meetingResult.meetLink} target="_blank" rel="noopener noreferrer" className="block text-sm font-semibold text-brand-500 hover:text-brand-600">
                                                                 Join Google Meet
                                                             </a>
                                                         )}
@@ -1864,7 +1865,7 @@ className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
                                                         <button
                                                             onClick={scheduleMeeting}
                                                             disabled={meetingStatus === 'saving'}
-                                                            className="w-full bg-pink-300 hover:bg-pink-400 text-white rounded-xl py-2 text-sm font-bold disabled:opacity-40"
+                                                            className="w-full bg-brand-300 hover:bg-brand-400 text-white rounded-xl py-2 text-sm font-bold disabled:opacity-40"
                                                         >
                                                             {meetingStatus === 'saving' ? 'Scheduling...' : 'Schedule Meeting'}
                                                         </button>
@@ -1931,7 +1932,7 @@ className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
             {bulkEmailOpen && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[65]">
                     <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden shadow-xl">
-                        <div className="bg-pink-300 px-6 py-4 flex items-center justify-between">
+                        <div className="bg-brand-300 px-6 py-4 flex items-center justify-between">
                             <div className="text-white font-bold">
                                 Email {selectedIds.size} Contact{selectedIds.size === 1 ? "" : "s"}
                             </div>
@@ -1984,7 +1985,7 @@ className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
                             </button>
                             <button
                                 onClick={sendBulkEmail}
-                                className="flex-1 bg-pink-300 hover:bg-pink-400 rounded-xl py-2 text-sm font-bold text-white"
+                                className="flex-1 bg-brand-300 hover:bg-brand-400 rounded-xl py-2 text-sm font-bold text-white"
                             >
                                 Open in Gmail
                             </button>
