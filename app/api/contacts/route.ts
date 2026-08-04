@@ -78,5 +78,6 @@ export async function POST(request: Request) {
     website: row.website,
     instagram: row.instagram,
     interactions: [],
+    followUps: [],
   });
 }
