@@ -1,14 +1,14 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { signOut } from 'next-auth/react';
 type Status = 'New Lead' | 'Contacted' | 'Negotiation' | 'Won' | 'Lost';
 type RoleType =
-| 'Owner'
-| 'General Manager'
-| 'Bar Manager'
-| 'Assistant Manager'
-| 'Marketing'
-| 'Operations Manager';
+    | 'Owner'
+    | 'General Manager'
+    | 'Bar Manager'
+    | 'Assistant Manager'
+    | 'Marketing'
+    | 'Operations Manager';
 
 const STAFF: { email: string; name: string }[] = [
     { email: 'maddison@effervescent.agency', name: 'Maddison' },
@@ -30,11 +30,11 @@ interface Interaction {
     notes: string;
 }
 interface FollowUp {
-id: number;
-note: string;
-dueDate: string;
-assignedTo: string;
-done: boolean;
+    id: number;
+    note: string;
+    dueDate: string;
+    assignedTo: string;
+    done: boolean;
 }
 interface Contact {
     id: number;
@@ -68,7 +68,7 @@ const statusColors: Record<Status, string> = {
     Lost: 'bg-gray-100 text-gray-600',
 };
 const roleOptions: RoleType[] = [
-'Owner',
+    'Owner',
     'General Manager',
     'Bar Manager',
     'Assistant Manager',
@@ -284,6 +284,31 @@ function SearchIcon() {
             <path d="M21 21l-4.35-4.35" />
         </svg>
     );
+} function BellIcon() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 01-3.46 0" />
+        </svg>
+    );
+}
+function daysAgo(dateStr?: string | null): number | null {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return null;
+    return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+function isAtRiskContact(c: Contact): boolean {
+    if (c.status !== 'New Lead' && c.status !== 'Contacted' && c.status !== 'Negotiation') return false;
+    const interactionDates = (c.interactions || [])
+        .map((it: Interaction) => new Date(it.date).getTime())
+        .filter((t: number) => !isNaN(t));
+    if (interactionDates.length === 0) {
+        const created = daysAgo(c.created);
+        return created !== null && created > 7;
+    }
+    const lastDays = Math.floor((Date.now() - Math.max(...interactionDates)) / 86400000);
+    return lastDays > 7;
 }
 const EMAIL_TEMPLATES: { id: string; name: string; subject: string; body: string }[] = [
     {
@@ -441,22 +466,22 @@ export default function Home() {
             if (data.htmlLink) meetingNotesParts.push(`Calendar event: ${data.htmlLink}`);
             if (meetingForm.description) meetingNotesParts.push(meetingForm.description);
             const meetingInteraction = {
-            date: meetingForm.date,
-            method: 'Meeting Booked',
-            contactedBy: '',
-            notes: meetingNotesParts.join(' '),
+                date: meetingForm.date,
+                method: 'Meeting Booked',
+                contactedBy: '',
+                notes: meetingNotesParts.join(' '),
             };
             setContacts((cs) =>
-            cs.map((c) =>
-            c.id === viewing.id
-            ? { ...c, interactions: [{ id: Date.now(), ...meetingInteraction }, ...c.interactions] }
-            : c
-            )
+                cs.map((c) =>
+                    c.id === viewing.id
+                        ? { ...c, interactions: [{ id: Date.now(), ...meetingInteraction }, ...c.interactions] }
+                        : c
+                )
             );
             fetch(`/api/contacts/${viewing.id}/interactions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(meetingInteraction),
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(meetingInteraction),
             }).catch((err) => console.error('Failed to log meeting interaction', err));
         } catch (err) {
             setMeetingStatus('error');
@@ -468,60 +493,60 @@ export default function Home() {
         setFollowUpStatus('idle');
         setFollowUpError('');
         setShowFollowUpModal(true);
-        }
-        async function submitFollowUp() {
+    }
+    async function submitFollowUp() {
         if (!viewing || !followUpForm.note) return;
         setFollowUpStatus('saving');
         setFollowUpError('');
         try {
-        const res = await fetch(`/api/contacts/${viewing.id}/follow-ups`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-        note: followUpForm.note,
-        dueDate: followUpForm.dueDate,
-        assignedTo: viewing.assignedTo,
-        }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-        setFollowUpStatus('error');
-        setFollowUpError(data.error || 'Failed to create follow-up.');
-        return;
-        }
-        setContacts((cs) =>
-        cs.map((c) =>
-        c.id === viewing.id ? { ...c, followUps: [...c.followUps, data] } : c
-        )
-        );
-        setShowFollowUpModal(false);
-        setFollowUpStatus('idle');
+            const res = await fetch(`/api/contacts/${viewing.id}/follow-ups`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    note: followUpForm.note,
+                    dueDate: followUpForm.dueDate,
+                    assignedTo: viewing.assignedTo,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setFollowUpStatus('error');
+                setFollowUpError(data.error || 'Failed to create follow-up.');
+                return;
+            }
+            setContacts((cs) =>
+                cs.map((c) =>
+                    c.id === viewing.id ? { ...c, followUps: [...c.followUps, data] } : c
+                )
+            );
+            setShowFollowUpModal(false);
+            setFollowUpStatus('idle');
         } catch (err) {
-        setFollowUpStatus('error');
-        setFollowUpError('Failed to create follow-up.');
+            setFollowUpStatus('error');
+            setFollowUpError('Failed to create follow-up.');
         }
-        }
-        function markFollowUpDone(followUpId: number) {
+    }
+    function markFollowUpDone(followUpId: number) {
         if (viewingId === null) return;
         fetch(`/api/contacts/${viewingId}/follow-ups/${followUpId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ done: true }),
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ done: true }),
         })
-        .then((res) => res.json())
-        .then((data) => {
-        setContacts((cs) =>
-        cs.map((c) => {
-        if (c.id !== viewingId) return c;
-        const remainingFollowUps = c.followUps.filter((f) => f.id !== followUpId);
-        const newInteractions = data.interaction ? [data.interaction, ...c.interactions] : c.interactions;
-        return { ...c, followUps: remainingFollowUps, interactions: newInteractions };
-        })
-        );
-        })
-        .catch((err) => console.error('Failed to mark follow-up done', err));
-        }
-        function counts(s: 'All' | Status) {
+            .then((res) => res.json())
+            .then((data) => {
+                setContacts((cs) =>
+                    cs.map((c) => {
+                        if (c.id !== viewingId) return c;
+                        const remainingFollowUps = c.followUps.filter((f) => f.id !== followUpId);
+                        const newInteractions = data.interaction ? [data.interaction, ...c.interactions] : c.interactions;
+                        return { ...c, followUps: remainingFollowUps, interactions: newInteractions };
+                    })
+                );
+            })
+            .catch((err) => console.error('Failed to mark follow-up done', err));
+    }
+    function counts(s: 'All' | Status) {
         return s === 'All'
             ? contacts.length
             : contacts.filter((c) => c.status === s).length;
@@ -651,6 +676,25 @@ export default function Home() {
         return matchesAssigned && matchesSearch;
     });
     const viewing = contacts.find((c) => c.id === viewingId) || null;
+    const [notifOpen, setNotifOpen] = useState(false);
+    const [remindersExpanded, setRemindersExpanded] = useState(false); const [remindersExpanded, setRemindersExpanded] = useState(false);
+    const allReminders = useMemo(() => {
+        const list = contacts.flatMap((c) =>
+            (c.followUps || []).map((f) => ({ ...f, contactId: c.id, company: c.company, name: c.name }))
+        );
+        return list.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    }, [contacts]);
+    const atRiskContacts = useMemo(() => contacts.filter(isAtRiskContact), [contacts]);
+    const newLeads = useMemo(() => {
+        return contacts
+            .filter((c) => c.status === 'New Lead' && !isAtRiskContact(c))
+            .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
+    }, [contacts]);
+    const totalNotifCount = allReminders.length + atRiskContacts.length + newLeads.length;
+    function goToContact(c: Contact) {
+        openView(c);
+        setNotifOpen(false);
+    }
     function openAdd() {
         setForm({
             name: '',
@@ -840,12 +884,106 @@ export default function Home() {
                             Clients and Partners CRM
                         </div>
                     </div>
-                    <button
-                        onClick={() => signOut({ callbackUrl: '/' })}
-                        className="ml-auto flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-pink-600"
-                    >
-                        Sign Out
-                    </button>
+                    <div className="ml-auto flex items-center gap-4">
+                        <div className="relative">
+                            <button onClick={() => setNotifOpen((o) => !o)} className="relative p-2 rounded-lg text-gray-500 hover:text-pink-600 hover:bg-gray-50">
+                                <BellIcon />
+                                {totalNotifCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                                        {totalNotifCount}
+                                    </span>
+                                )}
+                            </button>
+                            {notifOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-20" onClick={() => setNotifOpen(false)} />
+                                    <div className="absolute right-0 top-full mt-2 w-[26rem] max-h-[36rem] overflow-y-auto bg-white rounded-xl shadow-xl border border-gray-100 z-30 p-4 space-y-5">
+                                        {totalNotifCount === 0 ? (
+                                            <div className="text-center text-sm text-gray-400 py-6">You're all caught up!</div>
+                                        ) : (
+                                            <>
+                                                <div>
+                                                    <div className="text-xs font-bold text-pink-400 uppercase mb-2">Reminders Due ({allReminders.length})</div>
+                                                    {allReminders.length === 0 ? (
+                                                        <div className="text-xs text-gray-400">No reminders outstanding.</div>
+                                                    ) : (
+                                                        <div className="space-y-2">
+                                                            {(remindersExpanded ? allReminders : allReminders.slice(0, 5)).map((r) => {
+                                                                const dDiff = daysAgo(r.dueDate);
+                                                                const overdue = dDiff !== null && dDiff > 0;
+                                                                const dueToday = dDiff === 0;
+                                                                return (
+                                                                    <div key={r.id} onClick={() => { const c = contacts.find((cc) => cc.id === r.contactId); if (c) goToContact(c); }} className="bg-gray-50 hover:bg-gray-100 rounded-lg p-2.5 cursor-pointer">
+                                                                        <div className="flex items-center justify-between gap-2">
+                                                                            <div className="text-sm font-semibold text-gray-900">{r.company}</div>
+                                                                            <span className={'text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ' + (overdue ? 'bg-red-100 text-red-600' : dueToday ? 'bg-orange-100 text-orange-600' : 'bg-gray-200 text-gray-600')}>
+                                                                                {overdue ? 'Overdue' : dueToday ? 'Due Today' : formatDate(r.dueDate)}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="text-xs text-gray-600 mt-0.5">{r.note}</div>
+                                                                        <div className="text-[10px] text-gray-400 mt-1">Due {formatDate(r.dueDate)} &bull; {assignedToLabel(r.assignedTo)}</div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                            {allReminders.length > 5 && (
+                                                                <button onClick={() => setRemindersExpanded((e) => !e)} className="text-xs font-semibold text-pink-500 hover:text-pink-600">
+                                                                    {remindersExpanded ? 'Show less' : 'Show ' + (allReminders.length - 5) + ' more'}
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs font-bold text-pink-400 uppercase mb-2">At Risk ({atRiskContacts.length})</div>
+                                                    {atRiskContacts.length === 0 ? (
+                                                        <div className="text-xs text-gray-400">No at-risk contacts.</div>
+                                                    ) : (
+                                                        <div className="space-y-2">
+                                                            {atRiskContacts.map((c) => (
+                                                                <div key={c.id} onClick={() => goToContact(c)} className="bg-gray-50 hover:bg-gray-100 rounded-lg p-2.5 cursor-pointer">
+                                                                    <div className="flex items-center justify-between gap-2">
+                                                                        <div className="text-sm font-semibold text-gray-900">{c.company}</div>
+                                                                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 whitespace-nowrap">At Risk</span>
+                                                                    </div>
+                                                                    <div className="text-xs text-gray-600 mt-0.5">{c.name} &bull; {c.city}</div>
+                                                                    <div className="text-[10px] text-gray-400 mt-1">{lastContactInfo(c).text === 'No contact yet' ? 'Never contacted' : 'Last contact ' + lastContactInfo(c).text}</div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs font-bold text-pink-400 uppercase mb-2">New Leads ({newLeads.length})</div>
+                                                    {newLeads.length === 0 ? (
+                                                        <div className="text-xs text-gray-400">No new leads.</div>
+                                                    ) : (
+                                                        <div className="space-y-2">
+                                                            {newLeads.map((c) => (
+                                                                <div key={c.id} onClick={() => goToContact(c)} className="bg-gray-50 hover:bg-gray-100 rounded-lg p-2.5 cursor-pointer">
+                                                                    <div className="flex items-center justify-between gap-2">
+                                                                        <div className="text-sm font-semibold text-gray-900">{c.company}</div>
+                                                                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 whitespace-nowrap">New Lead</span>
+                                                                    </div>
+                                                                    <div className="text-xs text-gray-600 mt-0.5">{c.name} &bull; {c.city}</div>
+                                                                    <div className="text-[10px] text-gray-400 mt-1">Added {formatDate(c.created)}</div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => signOut({ callbackUrl: '/' })}
+                            className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-pink-600"
+                        >
+                            Sign Out
+                        </button>
+                    </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="relative flex-1">
@@ -1506,10 +1644,10 @@ export default function Home() {
                                     <CalendarIcon /> Schedule Meeting
                                 </button>
                                 <button
-                                onClick={openFollowUpModal}
-                                className="flex items-center justify-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
+                                    onClick={openFollowUpModal}
+                                    className="flex items-center justify-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
                                 >
-                                <CalendarIcon /> Follow-Up Reminder
+                                    <CalendarIcon /> Follow-Up Reminder
                                 </button>
                             </div>
                             <div>
@@ -1595,68 +1733,68 @@ export default function Home() {
                                     CONVERSATION HISTORY
                                 </div>
                                 {viewing.followUps.length > 0 && (
-                                <div className="space-y-2 mb-4">
-                                <div className="text-xs font-bold text-pink-400 mb-1">OPEN FOLLOW-UPS</div>
-                                {viewing.followUps.map((f) => (
-                                <div key={f.id} className="flex items-start gap-2 bg-gray-50 rounded-xl p-3">
-                                <input
-                                type="checkbox"
-                                checked={false}
-                                onChange={() => markFollowUpDone(f.id)}
-                                className="mt-1 rounded border-gray-300"
-                                />
-                                <div className="flex-1">
-                                <div className="text-sm text-gray-900">{f.note}</div>
-                                <div className="text-xs text-gray-400 mt-1">Due {formatDate(f.dueDate)} &bull; {assignedToLabel(f.assignedTo)}</div>
-                                </div>
-                                </div>
-                                ))}
-                                </div>
+                                    <div className="space-y-2 mb-4">
+                                        <div className="text-xs font-bold text-pink-400 mb-1">OPEN FOLLOW-UPS</div>
+                                        {viewing.followUps.map((f) => (
+                                            <div key={f.id} className="flex items-start gap-2 bg-gray-50 rounded-xl p-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={false}
+                                                    onChange={() => markFollowUpDone(f.id)}
+                                                    className="mt-1 rounded border-gray-300"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="text-sm text-gray-900">{f.note}</div>
+                                                    <div className="text-xs text-gray-400 mt-1">Due {formatDate(f.dueDate)} &bull; {assignedToLabel(f.assignedTo)}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 )}
                                 {showFollowUpModal && (
-                                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
-                                <div className="bg-white rounded-xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
-                                <div className="bg-pink-300 px-6 py-4 flex items-center justify-between rounded-t-xl">
-                                <div className="text-white font-bold">Follow-Up Reminder</div>
-                                <button onClick={() => setShowFollowUpModal(false)} className="text-white">
-                                <XIcon />
-                                </button>
-                                </div>
-                                <div className="p-4 space-y-3">
-                                <div>
-                                <div className="text-xs font-bold text-gray-500 mb-1">DUE DATE</div>
-                                <input
-                                type="date"
-                                value={followUpForm.dueDate}
-                                onChange={(e) => setFollowUpForm({ ...followUpForm, dueDate: e.target.value })}
-                                className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm"
-                                />
-                                </div>
-                                <div>
-                                <div className="text-xs font-bold text-gray-500 mb-1">NOTE *</div>
-                                <textarea
-                                value={followUpForm.note}
-                                onChange={(e) => setFollowUpForm({ ...followUpForm, note: e.target.value })}
-                                placeholder="What do you need to follow up on?"
-                                className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm h-20"
-                                />
-                                </div>
-                                <div className="text-xs text-gray-400">
-                                Assigned to: {assignedToLabel(viewing.assignedTo)}. A calendar task will be created and a reminder email sent to them on the due date.
-                                </div>
-                                {followUpStatus === 'error' && (
-                                <div className="text-xs text-red-500">{followUpError}</div>
-                                )}
-                                <button
-                                onClick={submitFollowUp}
-                                disabled={followUpStatus === 'saving'}
-                                className="w-full bg-pink-300 hover:bg-pink-400 text-white rounded-xl py-2 text-sm font-bold disabled:opacity-40"
-                                >
-                                {followUpStatus === 'saving' ? 'Saving...' : 'Save Follow-Up'}
-                                </button>
-                                </div>
-                                </div>
-                                </div>
+                                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
+                                        <div className="bg-white rounded-xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+                                            <div className="bg-pink-300 px-6 py-4 flex items-center justify-between rounded-t-xl">
+                                                <div className="text-white font-bold">Follow-Up Reminder</div>
+                                                <button onClick={() => setShowFollowUpModal(false)} className="text-white">
+                                                    <XIcon />
+                                                </button>
+                                            </div>
+                                            <div className="p-4 space-y-3">
+                                                <div>
+                                                    <div className="text-xs font-bold text-gray-500 mb-1">DUE DATE</div>
+                                                    <input
+                                                        type="date"
+                                                        value={followUpForm.dueDate}
+                                                        onChange={(e) => setFollowUpForm({ ...followUpForm, dueDate: e.target.value })}
+                                                        className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs font-bold text-gray-500 mb-1">NOTE *</div>
+                                                    <textarea
+                                                        value={followUpForm.note}
+                                                        onChange={(e) => setFollowUpForm({ ...followUpForm, note: e.target.value })}
+                                                        placeholder="What do you need to follow up on?"
+                                                        className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm h-20"
+                                                    />
+                                                </div>
+                                                <div className="text-xs text-gray-400">
+                                                    Assigned to: {assignedToLabel(viewing.assignedTo)}. A calendar task will be created and a reminder email sent to them on the due date.
+                                                </div>
+                                                {followUpStatus === 'error' && (
+                                                    <div className="text-xs text-red-500">{followUpError}</div>
+                                                )}
+                                                <button
+                                                    onClick={submitFollowUp}
+                                                    disabled={followUpStatus === 'saving'}
+                                                    className="w-full bg-pink-300 hover:bg-pink-400 text-white rounded-xl py-2 text-sm font-bold disabled:opacity-40"
+                                                >
+                                                    {followUpStatus === 'saving' ? 'Saving...' : 'Save Follow-Up'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 )}
                                 {showLogModal && (
                                     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
@@ -1711,16 +1849,16 @@ export default function Home() {
                                                         <div className="text-xs font-bold text-gray-500 mb-1">
                                                             CONTACTED BY
                                                         </div>
-<select
-    value={newInteraction.contactedBy}
-    onChange={(e) => {
-        setNewInteraction({
-            ...newInteraction,
-            contactedBy: e.target.value,
-        });
-    }}
-className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
-    ><option value="">Select staff...</option>{STAFF.map((s) => (<option key={s.email} value={s.name}>{s.name}</option>))}</select>
+                                                        <select
+                                                            value={newInteraction.contactedBy}
+                                                            onChange={(e) => {
+                                                                setNewInteraction({
+                                                                    ...newInteraction,
+                                                                    contactedBy: e.target.value,
+                                                                });
+                                                            }}
+                                                            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs"
+                                                        ><option value="">Select staff...</option>{STAFF.map((s) => (<option key={s.email} value={s.name}>{s.name}</option>))}</select>
                                                     </div>
                                                 </div>
                                                 <div>
