@@ -12,7 +12,7 @@ const SYSTEMS = [
                           {
                               name: "Recruitment",
                                   description: "Manage candidates and hiring pipelines.",
-                                      href: "https://effervescent-agency.vercel.app/candidates",
+                                      href: "https://effervescent-recruitment-crm.vercel.app/",
                                           external: true,
                                               available: true,
                                                 },
