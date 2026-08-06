@@ -886,102 +886,102 @@ export default function Home() {
                     </div>
                     <div className="ml-auto flex items-center gap-4">
                         <div className="relative">
-                            <button onClick={() => setNotifOpen((o) => !o)} className="relative p-2 rounded-lg text-gray-500 hover:text-pink-600 hover:bg-gray-50">
-                                <BellIcon />
-                                {totalNotifCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
-                                        {totalNotifCount}
-                                    </span>
-                                )}
-                            </button>
-                            {notifOpen && (
-                                <>
-                                    <div className="fixed inset-0 z-20" onClick={() => setNotifOpen(false)} />
-                                    <div className="absolute right-0 top-full mt-2 w-[26rem] max-h-[36rem] overflow-y-auto bg-white rounded-xl shadow-xl border border-gray-100 z-30 p-4 space-y-5">
-                                        {totalNotifCount === 0 ? (
-                                            <div className="text-center text-sm text-gray-400 py-6">You're all caught up!</div>
-                                        ) : (
-                                            <>
-                                                <div>
-                                                    <div className="text-xs font-bold text-pink-400 uppercase mb-2">Reminders Due ({allReminders.length})</div>
-                                                    {allReminders.length === 0 ? (
-                                                        <div className="text-xs text-gray-400">No reminders outstanding.</div>
-                                                    ) : (
-                                                        <div className="space-y-2">
-                                                            {(remindersExpanded ? allReminders : allReminders.slice(0, 5)).map((r) => {
-                                                                const dDiff = daysAgo(r.dueDate);
-                                                                const overdue = dDiff !== null && dDiff > 0;
-                                                                const dueToday = dDiff === 0;
-                                                                return (
-                                                                    <div key={r.id} onClick={() => { const c = contacts.find((cc) => cc.id === r.contactId); if (c) goToContact(c); }} className="bg-gray-50 hover:bg-gray-100 rounded-lg p-2.5 cursor-pointer">
-                                                                        <div className="flex items-center justify-between gap-2">
-                                                                            <div className="text-sm font-semibold text-gray-900">{r.company}</div>
-                                                                            <span className={'text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ' + (overdue ? 'bg-red-100 text-red-600' : dueToday ? 'bg-orange-100 text-orange-600' : 'bg-gray-200 text-gray-600')}>
-                                                                                {overdue ? 'Overdue' : dueToday ? 'Due Today' : formatDate(r.dueDate)}
-                                                                            </span>
-                                                                        </div>
-                                                                        <div className="text-xs text-gray-600 mt-0.5">{r.note}</div>
-                                                                        <div className="text-[10px] text-gray-400 mt-1">Due {formatDate(r.dueDate)} &bull; {assignedToLabel(r.assignedTo)}</div>
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                            {allReminders.length > 5 && (
-                                                                <button onClick={() => setRemindersExpanded((e) => !e)} className="text-xs font-semibold text-pink-500 hover:text-pink-600">
-                                                                    {remindersExpanded ? 'Show less' : 'Show ' + (allReminders.length - 5) + ' more'}
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <div className="text-xs font-bold text-pink-400 uppercase mb-2">At Risk ({atRiskContacts.length})</div>
-                                                    {atRiskContacts.length === 0 ? (
-                                                        <div className="text-xs text-gray-400">No at-risk contacts.</div>
-                                                    ) : (
-                                                        <div className="space-y-2">
-                                                            {atRiskContacts.map((c) => (
-                                                                <div key={c.id} onClick={() => goToContact(c)} className="bg-gray-50 hover:bg-gray-100 rounded-lg p-2.5 cursor-pointer">
-                                                                    <div className="flex items-center justify-between gap-2">
-                                                                        <div className="text-sm font-semibold text-gray-900">{c.company}</div>
-                                                                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 whitespace-nowrap">At Risk</span>
-                                                                    </div>
-                                                                    <div className="text-xs text-gray-600 mt-0.5">{c.name} &bull; {c.city}</div>
-                                                                    <div className="text-[10px] text-gray-400 mt-1">{lastContactInfo(c).text === 'No contact yet' ? 'Never contacted' : 'Last contact ' + lastContactInfo(c).text}</div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <div className="text-xs font-bold text-pink-400 uppercase mb-2">New Leads ({newLeads.length})</div>
-                                                    {newLeads.length === 0 ? (
-                                                        <div className="text-xs text-gray-400">No new leads.</div>
-                                                    ) : (
-                                                        <div className="space-y-2">
-                                                            {newLeads.map((c) => (
-                                                                <div key={c.id} onClick={() => goToContact(c)} className="bg-gray-50 hover:bg-gray-100 rounded-lg p-2.5 cursor-pointer">
-                                                                    <div className="flex items-center justify-between gap-2">
-                                                                        <div className="text-sm font-semibold text-gray-900">{c.company}</div>
-                                                                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 whitespace-nowrap">New Lead</span>
-                                                                    </div>
-                                                                    <div className="text-xs text-gray-600 mt-0.5">{c.name} &bull; {c.city}</div>
-                                                                    <div className="text-[10px] text-gray-400 mt-1">Added {formatDate(c.created)}</div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-                                </>
-                            )}
+                        <button onClick={() => setNotifOpen((o) => !o)} className="relative p-2 rounded-lg text-gray-500 hover:text-pink-600 hover:bg-gray-50">
+                        <BellIcon />
+                        {totalNotifCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                        {totalNotifCount}
+                        </span>
+                        )}
+                        </button>
+                        {notifOpen && (
+                        <>
+                        <div className="fixed inset-0 z-20" onClick={() => setNotifOpen(false)} />
+                        <div className="absolute right-0 top-full mt-2 w-[26rem] max-h-[36rem] overflow-y-auto bg-white rounded-xl shadow-xl border border-gray-100 z-30 p-4 space-y-5">
+                        {totalNotifCount === 0 ? (
+                        <div className="text-center text-sm text-gray-400 py-6">You're all caught up!</div>
+                        ) : (
+                        <>
+                        <div>
+                        <div className="text-xs font-bold text-pink-400 uppercase mb-2">Reminders Due ({allReminders.length})</div>
+                        {allReminders.length === 0 ? (
+                        <div className="text-xs text-gray-400">No reminders outstanding.</div>
+                        ) : (
+                        <div className="space-y-2">
+                        {(remindersExpanded ? allReminders : allReminders.slice(0, 5)).map((r) => {
+                        const dDiff = daysAgo(r.dueDate);
+                        const overdue = dDiff !== null && dDiff > 0;
+                        const dueToday = dDiff === 0;
+                        return (
+                        <div key={r.id} onClick={() => { const c = contacts.find((cc) => cc.id === r.contactId); if (c) goToContact(c); }} className="bg-gray-50 hover:bg-gray-100 rounded-lg p-2.5 cursor-pointer">
+                        <div className="flex items-center justify-between gap-2">
+                        <div className="text-sm font-semibold text-gray-900">{r.company}</div>
+                        <span className={'text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ' + (overdue ? 'bg-red-100 text-red-600' : dueToday ? 'bg-orange-100 text-orange-600' : 'bg-gray-200 text-gray-600')}>
+                        {overdue ? 'Overdue' : dueToday ? 'Due Today' : formatDate(r.dueDate)}
+                        </span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-0.5">{r.note}</div>
+                        <div className="text-[10px] text-gray-400 mt-1">Due {formatDate(r.dueDate)} &bull; {assignedToLabel(r.assignedTo)}</div>
+                        </div>
+                        );
+                        })}
+                        {allReminders.length > 5 && (
+                        <button onClick={() => setRemindersExpanded((e) => !e)} className="text-xs font-semibold text-pink-500 hover:text-pink-600">
+                        {remindersExpanded ? 'Show less' : 'Show ' + (allReminders.length - 5) + ' more'}
+                        </button>
+                        )}
+                        </div>
+                        )}
+                        </div>
+                        <div>
+                        <div className="text-xs font-bold text-pink-400 uppercase mb-2">At Risk ({atRiskContacts.length})</div>
+                        {atRiskContacts.length === 0 ? (
+                        <div className="text-xs text-gray-400">No at-risk contacts.</div>
+                        ) : (
+                        <div className="space-y-2">
+                        {atRiskContacts.map((c) => (
+                        <div key={c.id} onClick={() => goToContact(c)} className="bg-gray-50 hover:bg-gray-100 rounded-lg p-2.5 cursor-pointer">
+                        <div className="flex items-center justify-between gap-2">
+                        <div className="text-sm font-semibold text-gray-900">{c.company}</div>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 whitespace-nowrap">At Risk</span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-0.5">{c.name} &bull; {c.city}</div>
+                        <div className="text-[10px] text-gray-400 mt-1">{lastContactInfo(c).text === 'No contact yet' ? 'Never contacted' : 'Last contact ' + lastContactInfo(c).text}</div>
+                        </div>
+                        ))}
+                        </div>
+                        )}
+                        </div>
+                        <div>
+                        <div className="text-xs font-bold text-pink-400 uppercase mb-2">New Leads ({newLeads.length})</div>
+                        {newLeads.length === 0 ? (
+                        <div className="text-xs text-gray-400">No new leads.</div>
+                        ) : (
+                        <div className="space-y-2">
+                        {newLeads.map((c) => (
+                        <div key={c.id} onClick={() => goToContact(c)} className="bg-gray-50 hover:bg-gray-100 rounded-lg p-2.5 cursor-pointer">
+                        <div className="flex items-center justify-between gap-2">
+                        <div className="text-sm font-semibold text-gray-900">{c.company}</div>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 whitespace-nowrap">New Lead</span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-0.5">{c.name} &bull; {c.city}</div>
+                        <div className="text-[10px] text-gray-400 mt-1">Added {formatDate(c.created)}</div>
+                        </div>
+                        ))}
+                        </div>
+                        )}
+                        </div>
+                        </>
+                        )}
+                        </div>
+                        </>
+                        )}
                         </div>
                         <button
-                            onClick={() => signOut({ callbackUrl: '/' })}
-                            className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-pink-600"
+                        onClick={() => signOut({ callbackUrl: '/' })}
+                        className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-pink-600"
                         >
-                            Sign Out
+                        Sign Out
                         </button>
                     </div>
                 </div>
