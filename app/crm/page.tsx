@@ -677,7 +677,7 @@ export default function Home() {
     });
     const viewing = contacts.find((c) => c.id === viewingId) || null;
     const [notifOpen, setNotifOpen] = useState(false);
-    const [remindersExpanded, setRemindersExpanded] = useState(false); const [remindersExpanded, setRemindersExpanded] = useState(false);
+    const [remindersExpanded, setRemindersExpanded] = useState(false);
     const allReminders = useMemo(() => {
         const list = contacts.flatMap((c) =>
             (c.followUps || []).map((f) => ({ ...f, contactId: c.id, company: c.company, name: c.name }))
